@@ -1,0 +1,5 @@
+# Easy PID Motor Controller Version 2(EPMC_V2) Firmware
+This is the code running on the microcontroller on the **Easy PID Motor Controller**.
+
+- it is a PlatformIO file.
+- It uses ESP32 DOIT DEV KIT
