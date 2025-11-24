@@ -144,6 +144,7 @@ double maxVel[num_of_motors] = {
 // for command timeout.
 uint64_t cmdVelTimeoutInterval = 0; // us -> (1000000/sampleTime) hz
 uint64_t cmdVelTimeout;
+bool motor_is_commanded = false;
 
 // initial i2cAddress
 uint8_t i2cAddress = 0x55;
@@ -262,7 +263,8 @@ float writeSpeed(float v0, float v1)
     float tVel = constrain(targetVel[i], -1.00 * maxVel[i], maxVel[i]);
     target[i] = (double)rdir[i] * tVel;
   }
-  cmdVelTimeout = esp_timer_get_time();
+  motor_is_commanded = true;
+  // cmdVelTimeout = esp_timer_get_time();
 
   return 1.0;
 }
@@ -275,7 +277,8 @@ float writePWM(int pwm0, int pwm1)
       int p = constrain(pwm[i], -255, 255);
       motor[i].sendPWM(rdir[i] * p);
     }
-    cmdVelTimeout = esp_timer_get_time();
+    motor_is_commanded = true;
+    // cmdVelTimeout = esp_timer_get_time();
   }
   
   return 1.0;

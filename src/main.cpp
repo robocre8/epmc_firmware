@@ -179,6 +179,11 @@ void loop()
   }
 
   // command timeout
+  if (motor_is_commanded) {
+    cmdVelTimeout = esp_timer_get_time();
+    motor_is_commanded = false;
+  }
+  
   if (cmdVelTimeoutInterval > 0)
   {
     if ((esp_timer_get_time() - cmdVelTimeout) >= cmdVelTimeoutInterval)
