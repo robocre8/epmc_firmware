@@ -126,17 +126,13 @@ void loop()
 {
   // Serial comm loop
   recieve_and_send_data();
-  // if ((esp_timer_get_time() - serialCommTime) >= serialCommTimeInterval)
-  // {
-  //   recieve_and_send_data();
-  //   serialCommTime = esp_timer_get_time();
-  // }
   
+  // Velocity reading and filtering
   if ((esp_timer_get_time() - sensorReadTime) >= sensorReadTimeInterval)
   {
     for (int i = 0; i < num_of_motors; i += 1)
     {
-      encoder[i].resetFrequency();
+      encoder[i].resetFrequency(); // ensures readinding of zero velocity when motor stops
       unfilteredVel[i] = encoder[i].getAngVel();
       filteredVel[i] = velFilter[i].filter(unfilteredVel[i]);
     }

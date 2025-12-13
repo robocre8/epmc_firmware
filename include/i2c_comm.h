@@ -35,7 +35,7 @@ void prepareResponse4(float res0, float res1, float res2, float res3) {
 }
 
 // Example command handler
-void handleCommand(uint8_t cmd, uint8_t* data, uint8_t length) {
+void handleCommand(uint8_t cmd, uint8_t* data) {
 
   digitalWrite(LED_PIN, HIGH);
 
@@ -192,10 +192,28 @@ void onReceive(int numBytes) {
 
       case 4: // Checksum
         if ((msgChecksum & 0xFF) == b) {
-          handleCommand(msgCmd, msgBuffer, msgLength);
+          handleCommand(msgCmd, msgBuffer);
         } else {
           float error = 0.0;
-          prepareResponse1(error);
+          switch(msgLength){
+            case 4: {
+              prepareResponse1(error);
+              break;
+            }
+            case 8: {
+              prepareResponse2(error, error);
+              break;
+            }
+            case 16: {
+              prepareResponse4(error, error, error, error);
+              break;
+            }
+            default: {
+              prepareResponse1(error);
+              break;
+            }
+          }
+          
         }
         readState = 0; // reset for next packet
         break;
