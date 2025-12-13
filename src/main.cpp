@@ -88,8 +88,8 @@ void setup()
 {
   loadStoredParams();
 
-  // Serial.begin(57600);
-  Serial.begin(115200);
+  Serial.begin(57600);
+  // Serial.begin(115200);
   // Serial.begin(460800);
   // Serial.begin(921600);
   // Serial.setTimeout(2);
