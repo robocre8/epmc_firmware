@@ -37,7 +37,7 @@ void prepareResponse4(float res0, float res1, float res2, float res3) {
 // Example command handler
 void handleCommand(uint8_t cmd, uint8_t* data) {
 
-  digitalWrite(LED_PIN, HIGH);
+  gpio_set_level((gpio_num_t)LED_PIN, 1);
 
   switch (cmd) {
     case WRITE_VEL: {
@@ -45,7 +45,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       memcpy(&v0, &data[0], sizeof(float));
       memcpy(&v1, &data[4], sizeof(float));
       writeSpeed(v0, v1);
-      digitalWrite(LED_PIN, LOW);
+      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
@@ -55,7 +55,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       memcpy(&pwm0, &data[0], sizeof(float));
       memcpy(&pwm1, &data[4], sizeof(float));
       writePWM((int)pwm0, (int)pwm1);
-      digitalWrite(LED_PIN, LOW);
+      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
@@ -95,7 +95,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       float value;
       memcpy(&value, &data[1], sizeof(float));
       setCmdTimeout((int)value);
-      digitalWrite(LED_PIN, LOW);
+      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
@@ -110,7 +110,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       float value;
       memcpy(&value, &data[1], sizeof(float));
       setPidModeFunc((int)value);
-      digitalWrite(LED_PIN, LOW);
+      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
@@ -148,7 +148,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
 void onRequest() {
   Wire.write(sendMsgBuffer, sendMsgLength);
   clearSendMsgBuffer();
-  digitalWrite(LED_PIN, LOW);
+  gpio_set_level((gpio_num_t)LED_PIN, 0);
 }
 
 // Called when master sends data
