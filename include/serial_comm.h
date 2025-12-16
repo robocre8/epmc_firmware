@@ -69,9 +69,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setEncoderPPR((int)pos, (double)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setEncoderPPR((int)pos, (double)value);
       break;
     }
 
@@ -88,9 +86,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setMotorKp((int)pos, (double)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setMotorKp((int)pos, (double)value);
       break;
     }
 
@@ -107,9 +103,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setMotorKi((int)pos, (double)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setMotorKi((int)pos, (double)value);
       break;
     }
 
@@ -126,9 +120,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setMotorKd((int)pos, (double)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setMotorKd((int)pos, (double)value);
       break;
     }
 
@@ -145,9 +137,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setRdir((int)pos, (float)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setRdir((int)pos, (float)value);
       break;
     }
 
@@ -164,9 +154,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setCutoffFreq((int)pos, (double)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setCutoffFreq((int)pos, (double)value);
       break;
     }
 
@@ -183,9 +171,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setMaxVel((int)pos, (double)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setMaxVel((int)pos, (double)value);
       break;
     }
 
@@ -201,9 +187,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case SET_PID_MODE: {
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setPidModeFunc((int)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setPidModeFunc((int)value);
       break;
     }
 
@@ -218,9 +202,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case SET_CMD_TIMEOUT: {
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setCmdTimeout((int)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setCmdTimeout((int)value);
       break;
     }
 
@@ -235,9 +217,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case SET_I2C_ADDR: {
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setI2cAddress((int)value);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      setI2cAddress((int)value);
       break;
     }
 

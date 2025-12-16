@@ -44,9 +44,6 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       float v0, v1;
       memcpy(&v0, &data[0], sizeof(float));
       memcpy(&v1, &data[4], sizeof(float));
-      // Serial.print(v0);
-      // Serial.print(",");
-      // Serial.println(v1);
       writeSpeed(v0, v1);
       digitalWrite(LED_PIN, LOW);
       break;
@@ -97,8 +94,8 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
     case SET_CMD_TIMEOUT: {
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setCmdTimeout((int)value);
-      prepareResponse1(res);
+      setCmdTimeout((int)value);
+      digitalWrite(LED_PIN, LOW);
       break;
     }
 
@@ -112,13 +109,20 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
     case SET_PID_MODE: {
       float value;
       memcpy(&value, &data[1], sizeof(float));
-      float res = setPidModeFunc((int)value);
-      prepareResponse1(res);
+      setPidModeFunc((int)value);
+      digitalWrite(LED_PIN, LOW);
       break;
     }
 
     case GET_PID_MODE: {
       float res = getPidModeFunc();
+      prepareResponse1(res);
+      break;
+    }
+
+    case GET_MAX_VEL: {
+      uint8_t pos = data[0];
+      float res = getMaxVel((int)pos);
       prepareResponse1(res);
       break;
     }
