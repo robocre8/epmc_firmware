@@ -6,7 +6,8 @@
 
 void processCommand(uint8_t cmd, uint8_t* data) {
 
-  digitalWrite(LED_PIN, HIGH);
+  gpio_set_level((gpio_num_t)LED_PIN, 1);
+
   switch (cmd) {
     case WRITE_VEL: {
       float v0, v1;
@@ -265,7 +266,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     }
   }
 
-  digitalWrite(LED_PIN, LOW);
+  gpio_set_level((gpio_num_t)LED_PIN, 0);
 }
 
 
