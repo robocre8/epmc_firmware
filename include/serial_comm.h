@@ -325,30 +325,9 @@ void recieve_and_send_data() {
         if ((checksum & 0xFF) == b) {
           processCommand(cmd, buffer);
         } else {
-          float err = 0.0;
-          switch(length){
-            case 4: {
-              Serial.write((uint8_t*)& err, sizeof(err));
-              break;
-            }
-            case 8: {
-              Serial.write((uint8_t*)& err, sizeof(err));
-              Serial.write((uint8_t*)& err, sizeof(err));
-              break;
-            }
-            case 16: {
-              Serial.write((uint8_t*)& err, sizeof(err));
-              Serial.write((uint8_t*)& err, sizeof(err));
-              Serial.write((uint8_t*)& err, sizeof(err));
-              Serial.write((uint8_t*)& err, sizeof(err));
-              break;
-            }
-            default: {
-              Serial.write((uint8_t*)& err, sizeof(err));
-              break;
-            }
-          }
-            
+          float error = 0.0;
+          Serial.write((uint8_t*)&error, sizeof(error));
+          Serial.flush();
         }
         state = 0; // reset for next packet
         break;
