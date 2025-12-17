@@ -32,7 +32,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       readPos(pos0, pos1);
       Serial.write((uint8_t*)&pos0, sizeof(pos0));
       Serial.write((uint8_t*)&pos1, sizeof(pos1));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -42,7 +42,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       readFilteredVel(v0, v1);
       Serial.write((uint8_t*)&v0, sizeof(v0));
       Serial.write((uint8_t*)&v1, sizeof(v1));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -52,7 +52,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       readUnfilteredVel(v0, v1);
       Serial.write((uint8_t*)&v0, sizeof(v0));
       Serial.write((uint8_t*)&v1, sizeof(v1));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -62,7 +62,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       readTargetVel(v0, v1);
       Serial.write((uint8_t*)&v0, sizeof(v0));
       Serial.write((uint8_t*)&v1, sizeof(v1));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -95,7 +95,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float res = getMotorKp((int)pos);
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -112,7 +112,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float res = getMotorKi((int)pos);
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -129,7 +129,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float res = getMotorKd((int)pos);
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -146,7 +146,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float res = getRdir((int)pos);
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -163,7 +163,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float res = getCutoffFreq((int)pos);
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -180,7 +180,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       uint8_t pos = data[0];
       float res = getMaxVel((int)pos);
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -195,7 +195,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case GET_PID_MODE: {
       float res = getPidModeFunc();
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -210,7 +210,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case GET_CMD_TIMEOUT: {
       float res = getCmdTimeout();
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -225,7 +225,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case GET_I2C_ADDR: {
       float res = getI2cAddress();
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -233,7 +233,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     case RESET_PARAMS: {
       float res = triggerResetParams();
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
@@ -246,14 +246,14 @@ void processCommand(uint8_t cmd, uint8_t* data) {
       Serial.write((uint8_t*)&pos1, sizeof(pos1));
       Serial.write((uint8_t*)&v0, sizeof(v0));
       Serial.write((uint8_t*)&v1, sizeof(v1));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
 
     case CLEAR_DATA_BUFFER: {
       float res = clearDataBuffer();
       Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
     
@@ -261,7 +261,7 @@ void processCommand(uint8_t cmd, uint8_t* data) {
     default: {
       float error = 0.0;
       Serial.write((uint8_t*)&error, sizeof(error));
-      Serial.flush();
+      // Serial.flush();
       break;
     }
   }
