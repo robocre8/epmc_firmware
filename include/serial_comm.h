@@ -8,6 +8,7 @@ int cmd;
 int cmd_pos;
 float arg1;
 float arg2;
+char null_char = '\0';
 
 void send_data(float data1=0.0, float data2=0.0){
   Serial.print(data1,4);
@@ -226,7 +227,7 @@ void recieve_and_send_data() {
 
     // End of line → parse
     if (c == '\n' || c == '\r') {
-      rx_buffer[idx] = '\0';
+      rx_buffer[idx] = null_char;
       idx = 0;
 
       char *ptr = rx_buffer;
