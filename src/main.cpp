@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "command_functions.h"
 #include "serial_comm.h"
-#include "i2c_comm.h"
+// #include "i2c_comm.h"
 #include "driver/periph_ctrl.h"
 
 //------------------------------------------------------------------------------//
@@ -88,14 +88,14 @@ void setup()
 {
   loadStoredParams();
 
-  Serial.begin(57600);
-  // Serial.begin(115200);
+  // Serial.begin(57600);
+  Serial.begin(115200);
   // Serial.begin(460800);
   // Serial.begin(921600);
   // Serial.setTimeout(2);
   
-  Wire.onReceive(onReceive);
-  Wire.onRequest(onRequest);
+  // Wire.onReceive(onReceive);
+  // Wire.onRequest(onRequest);
   Wire.begin(i2cAddress);
 
   analogWriteResolution(8); // 8 Bit resolution

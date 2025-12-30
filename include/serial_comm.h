@@ -3,265 +3,212 @@
 
 #include "command_functions.h"
 
+// The arguments converted to integers
+int cmd;
+int cmd_pos;
+float arg1;
+float arg2;
 
-void processCommand(uint8_t cmd, uint8_t* data) {
+void send_data(float data1=0.0, float data2=0.0){
+  Serial.print(data1,4);
+  Serial.print(' ');
+  Serial.println(data2,4);
+  Serial.flush();
+}
 
+/* Clear the current command parameters */
+void resetCommand() {
+  cmd = 0;
+  cmd_pos = 0;
+  arg1 = 0.0;
+  arg2 = 0.0;
+}
+
+/* Run a command.  Commands are defined in commands.h */
+void runCommand() {
   gpio_set_level((gpio_num_t)LED_PIN, 1);
 
   switch (cmd) {
-    case WRITE_VEL: {
-      float v0, v1;
-      memcpy(&v0, &data[0], sizeof(float));
-      memcpy(&v1, &data[4], sizeof(float));
-      writeSpeed(v0, v1);
+    case WRITE_SPEED: {
+      writeSpeed(arg1, arg2);
       break;
     }
 
+    case READ_SPEED: {
+      //read actual speed
+      float v0, v1;
+      readSpeed(v0, v1);
+      send_data(v0, v1);
+      break;
+    }
 
     case WRITE_PWM: {
-      float pwm0, pwm1;
-      memcpy(&pwm0, &data[0], sizeof(float));
-      memcpy(&pwm1, &data[4], sizeof(float));
-      writePWM((int)pwm0, (int)pwm1);
+      // write PWM
+      writePWM((int)arg1, (int)arg2);
       break;
     }
-
 
     case READ_POS: {
       float pos0, pos1;
+      // read pos
       readPos(pos0, pos1);
-      Serial.write((uint8_t*)&pos0, sizeof(pos0));
-      Serial.write((uint8_t*)&pos1, sizeof(pos1));
-      // Serial.flush();
+      send_data(pos0, pos1);
       break;
     }
 
-
-    case READ_VEL: {
+    case READ_TSPEED: {
       float v0, v1;
-      readFilteredVel(v0, v1);
-      Serial.write((uint8_t*)&v0, sizeof(v0));
-      Serial.write((uint8_t*)&v1, sizeof(v1));
-      // Serial.flush();
-      break;
-    }
-
-
-    case READ_UVEL: {
-      float v0, v1;
-      readUnfilteredVel(v0, v1);
-      Serial.write((uint8_t*)&v0, sizeof(v0));
-      Serial.write((uint8_t*)&v1, sizeof(v1));
-      // Serial.flush();
-      break;
-    }
-
-
-    case READ_TVEL: {
-      float v0, v1;
-      readTargetVel(v0, v1);
-      Serial.write((uint8_t*)&v0, sizeof(v0));
-      Serial.write((uint8_t*)&v1, sizeof(v1));
-      // Serial.flush();
+      // read target speed
+      readTargetSpeed(v0, v1);
+      send_data(v0, v1);
       break;
     }
 
     case SET_PPR: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setEncoderPPR((int)pos, (double)value);
+      // write PPR
+      setEncoderPPR((int)arg1, (double)arg2);
       break;
     }
 
     case GET_PPR: {
-      uint8_t pos = data[0];
-      float res = getEncoderPPR((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      Serial.flush();
+      //read PPR
+      float res = getEncoderPPR((int)arg1);
+      send_data(res);
       break;
     }
 
-
     case SET_KP: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setMotorKp((int)pos, (double)value);
+      //write KP
+      setMotorKp((int)arg1, (double)arg2);
       break;
     }
 
     case GET_KP: {
-      uint8_t pos = data[0];
-      float res = getMotorKp((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      //read KP
+      float res = getMotorKp((int)arg1);
+      send_data(res);
       break;
     }
 
 
     case SET_KI: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setMotorKi((int)pos, (double)value);
+      //write KI
+      setMotorKi((int)arg1, (double)arg2);
       break;
     }
 
     case GET_KI: {
-      uint8_t pos = data[0];
-      float res = getMotorKi((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      //read KI
+      float res = getMotorKi((int)arg1);
+      send_data(res);
       break;
     }
 
     
     case SET_KD: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setMotorKd((int)pos, (double)value);
+      //write KD
+      setMotorKd((int)arg1, (double)arg2);
       break;
     }
 
     case GET_KD: {
-      uint8_t pos = data[0];
-      float res = getMotorKd((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      //read KD
+      float res = getMotorKd((int)arg1);
+      send_data(res);
       break;
     }
 
 
     case SET_RDIR: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setRdir((int)pos, (float)value);
+      //write RDIR
+      setRdir((int)arg1, (double)arg2);
       break;
     }
 
     case GET_RDIR: {
-      uint8_t pos = data[0];
-      float res = getRdir((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      //read KI
+      float res = getRdir((int)arg1);
+      send_data(res);
       break;
     }
 
-
-    case SET_CUT_FREQ: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setCutoffFreq((int)pos, (double)value);
+    case SET_CF: {
+      //write Cutoff Freq
+      setCutoffFreq((int)arg1, (double)arg2);
       break;
     }
 
-    case GET_CUT_FREQ: {
-      uint8_t pos = data[0];
-      float res = getCutoffFreq((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+    case GET_CF: {
+      //read Cutoff Freq
+      float res = getCutoffFreq((int)arg1);
+      send_data(res);
       break;
     }
 
-
-    case SET_MAX_VEL: {
-      uint8_t pos = data[0];
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setMaxVel((int)pos, (double)value);
+    case SET_MAX_SPEED: {
+      //write Motor Max Speed
+      setMaxVel((int)arg1, (double)arg2);
       break;
     }
 
-    case GET_MAX_VEL: {
-      uint8_t pos = data[0];
-      float res = getMaxVel((int)pos);
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+    case GET_MAX_SPEED: {
+      //read Motor Max Speed
+      float res = getMaxVel((int)arg1);
+      send_data(res);
       break;
     }
-
 
     case SET_PID_MODE: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setPidModeFunc((int)value);
+      //write PID Mode
+      setPidModeFunc((int)arg2);
       break;
     }
 
     case GET_PID_MODE: {
+      //read PID Mode
       float res = getPidModeFunc();
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      send_data(res);
       break;
     }
 
-
     case SET_CMD_TIMEOUT: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setCmdTimeout((int)value);
+      //write Command Timeout
+      setCmdTimeout((int)arg1);
       break;
     }
 
     case GET_CMD_TIMEOUT: {
+      //read Command Timeout
       float res = getCmdTimeout();
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      send_data(res);
       break;
     }
 
-
     case SET_I2C_ADDR: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setI2cAddress((int)value);
+      //write I2C Address
+      setI2cAddress((int)arg1);
       break;
     }
 
     case GET_I2C_ADDR: {
+      //read I2C Address
       float res = getI2cAddress();
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      send_data(res);
       break;
     }
 
 
-    case RESET_PARAMS: {
+    case RESET: {
+      //reset all stored parameters return 1.0 if successfull
       float res = triggerResetParams();
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
+      send_data(res);
       break;
     }
 
-
-    case READ_MOTOR_DATA: {
-      float pos0, pos1, v0, v1;
-      readPos(pos0, pos1);
-      readFilteredVel(v0, v1);
-      Serial.write((uint8_t*)&pos0, sizeof(pos0));
-      Serial.write((uint8_t*)&pos1, sizeof(pos1));
-      Serial.write((uint8_t*)&v0, sizeof(v0));
-      Serial.write((uint8_t*)&v1, sizeof(v1));
-      // Serial.flush();
-      break;
-    }
-
-    case CLEAR_DATA_BUFFER: {
+    case CLEAR: {
+      // clear all inintializing variables
       float res = clearDataBuffer();
-      Serial.write((uint8_t*)&res, sizeof(res));
-      // Serial.flush();
-      break;
-    }
-    
-
-    default: {
-      float error = 0.0;
-      Serial.write((uint8_t*)&error, sizeof(error));
-      // Serial.flush();
+      send_data(res);
       break;
     }
   }
@@ -270,70 +217,43 @@ void processCommand(uint8_t cmd, uint8_t* data) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
 void recieve_and_send_data() {
-  static uint8_t state = 0;
-  static uint8_t cmd, length;
-  static uint8_t buffer[40];
-  static uint8_t index = 0;
-  static uint8_t checksum = 0;
+  static char rx_buffer[64];
+  static uint8_t idx = 0;
 
   while (Serial.available()) {
-    uint8_t b = Serial.read();
+    char c = Serial.read();
 
-    switch (state) {
-      case 0: // Wait for start
-        if (b == START_BYTE) {
-          state = 1;
-          checksum = b;
-        }
-        break;
+    // End of line → parse
+    if (c == '\n' || c == '\r') {
+      rx_buffer[idx] = '\0';
+      idx = 0;
 
-      case 1: // Command
-        cmd = b;
-        checksum += b;
-        state = 2;
-        break;
+      char *ptr = rx_buffer;
+      char *end;
 
-      case 2: // Length
-        length = b;
-        checksum += b;
-        if (length==0){
-          state = 4;
-        }
-        else{
-          index = 0;
-          state = 3;
-        }
-        break;
+      // Parse cmd
+      float cmd_  = strtof(ptr, &end);
+      cmd = (int)cmd_;
+      ptr = end;
 
-      case 3: // Payload
-        buffer[index++] = b;
-        checksum += b;
-        if (index >= length) state = 4;
-        break;
+      // Parse arg1
+      arg1 = strtof(ptr, &end);
+      ptr = end;
 
-      case 4: // Checksum
-        if ((checksum & 0xFF) == b) {
-          processCommand(cmd, buffer);
-        } else {
-          float error = 0.0;
-          Serial.write((uint8_t*)&error, sizeof(error));
-          Serial.flush();
-        }
-        state = 0; // reset for next packet
-        break;
+      // Parse arg2
+      arg2 = strtof(ptr, &end);
+
+      runCommand();
+      return;
+    }
+
+    // Store characters safely
+    if (idx < sizeof(rx_buffer) - 1) {
+      rx_buffer[idx++] = c;
     }
   }
 }
+
 
 #endif
