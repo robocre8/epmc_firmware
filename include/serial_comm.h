@@ -8,7 +8,6 @@ int cmd;
 int cmd_pos;
 float arg1;
 float arg2;
-char null_char = '\0';
 
 void send_data(float data1=0.0, float data2=0.0){
   Serial.print(data1,4);
@@ -119,7 +118,6 @@ void runCommand() {
       break;
     }
 
-
     case SET_RDIR: {
       //write RDIR
       setRdir((int)arg1, (double)arg2);
@@ -148,13 +146,13 @@ void runCommand() {
 
     case SET_MAX_SPEED: {
       //write Motor Max Speed
-      setMaxVel((int)arg1, (double)arg2);
+      setMaxSpeed((int)arg1, (double)arg2);
       break;
     }
 
     case GET_MAX_SPEED: {
       //read Motor Max Speed
-      float res = getMaxVel((int)arg1);
+      float res = getMaxSpeed((int)arg1);
       send_data(res);
       break;
     }
@@ -174,7 +172,7 @@ void runCommand() {
 
     case SET_CMD_TIMEOUT: {
       //write Command Timeout
-      setCmdTimeout((int)arg1);
+      setCmdTimeout((int)arg2);
       break;
     }
 
@@ -187,7 +185,7 @@ void runCommand() {
 
     case SET_I2C_ADDR: {
       //write I2C Address
-      setI2cAddress((int)arg1);
+      setI2cAddress((int)arg2);
       break;
     }
 

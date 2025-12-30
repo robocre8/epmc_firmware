@@ -53,6 +53,7 @@
 int LED_PIN = 2;
 
 const int num_of_motors = 2;
+char null_char = '\0';
 
 // motor 0 H-Bridge Connection
 int IN1_0 = 4, IN2_0 = 10;
@@ -465,7 +466,7 @@ float getCutoffFreq(int motor_no)
 
 
 
-float setMaxVel(int motor_no, double max_vel)
+float setMaxSpeed(int motor_no, double max_vel)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
@@ -476,7 +477,7 @@ float setMaxVel(int motor_no, double max_vel)
   storage.end();
   return 1.0;
 }
-float getMaxVel(int motor_no)
+float getMaxSpeed(int motor_no)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 10.0;

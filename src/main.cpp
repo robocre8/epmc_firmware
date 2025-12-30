@@ -94,8 +94,8 @@ void setup()
   // Serial.begin(921600);
   // Serial.setTimeout(2);
   
-  // Wire.onReceive(onReceive);
-  // Wire.onRequest(onRequest);
+  Wire.onReceive(onReceive);
+  Wire.onRequest(onRequest);
   Wire.begin(i2cAddress);
 
   analogWriteResolution(8); // 8 Bit resolution
