@@ -9,42 +9,51 @@
 #include "simple_pid_control.h"
 
 //------------ Communication Command IDs --------------//
-const uint8_t START_BYTE = 0xAA;
-const uint8_t WRITE_VEL = 0x01;
-const uint8_t WRITE_PWM = 0x02;
-const uint8_t READ_POS = 0x03;
-const uint8_t READ_VEL = 0x04;
-const uint8_t READ_UVEL = 0x05;
-const uint8_t READ_TVEL = 0x06;
-const uint8_t SET_PPR = 0x07;
-const uint8_t GET_PPR = 0x08;
-const uint8_t SET_KP = 0x09;
-const uint8_t GET_KP = 0x0A;
-const uint8_t SET_KI = 0x0B;
-const uint8_t GET_KI = 0x0C;
-const uint8_t SET_KD = 0x0D;
-const uint8_t GET_KD = 0x0E;
-const uint8_t SET_RDIR = 0x0F;
-const uint8_t GET_RDIR = 0x10;
-const uint8_t SET_CUT_FREQ = 0x11;
-const uint8_t GET_CUT_FREQ = 0x12;
-const uint8_t SET_MAX_VEL = 0x13;
-const uint8_t GET_MAX_VEL = 0x14;
-const uint8_t SET_PID_MODE = 0x15;
-const uint8_t GET_PID_MODE = 0x16;
-const uint8_t SET_CMD_TIMEOUT = 0x17;
-const uint8_t GET_CMD_TIMEOUT = 0x18;
-const uint8_t SET_I2C_ADDR = 0x19;
-const uint8_t GET_I2C_ADDR = 0x1A;
-const uint8_t RESET_PARAMS = 0x1B;
-const uint8_t READ_MOTOR_DATA = 0x2A;
-const uint8_t CLEAR_DATA_BUFFER = 0x2C;
+#define WRITE_SPEED 10
+#define READ_SPEED 11
+#define READ_TSPEED 12
+#define READ_POS 13
+#define WRITE_PWM 14
+
+#define SET_KP 15
+#define GET_KP 16
+
+#define SET_KI 17
+#define GET_KI 18
+
+#define SET_KD 19
+#define GET_KD 20
+
+#define SET_PPR 21
+#define GET_PPR 22
+
+#define SET_CF 23
+#define GET_CF 24
+
+#define SET_RDIR 25
+#define GET_RDIR 26
+
+#define SET_PID_MODE 27
+#define GET_PID_MODE 28
+
+#define SET_CMD_TIMEOUT 29
+#define GET_CMD_TIMEOUT 30
+
+#define SET_I2C_ADDR 31
+#define GET_I2C_ADDR 32
+
+#define SET_MAX_SPEED 33
+#define GET_MAX_SPEED 34
+
+#define RESET 35
+#define CLEAR 36
 //---------------------------------------------------//
 
 //--------------- global variables -----------------//
 int LED_PIN = 2;
 
 const int num_of_motors = 2;
+char null_char = '\0';
 
 // motor 0 H-Bridge Connection
 int IN1_0 = 4, IN2_0 = 10;
@@ -294,7 +303,7 @@ void readPos(float &pos0, float &pos1)
   pos1 = (float)posData[1];
 }
 
-void readFilteredVel(float &v0, float &v1)
+void readSpeed(float &v0, float &v1)
 {
   double velData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
@@ -304,7 +313,7 @@ void readFilteredVel(float &v0, float &v1)
   v1 = (float)velData[1];
 }
 
-void readUnfilteredVel(float &v0, float &v1)
+void readUnfilteredSpeed(float &v0, float &v1)
 {
   double velData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
@@ -314,7 +323,7 @@ void readUnfilteredVel(float &v0, float &v1)
   v1 = (float)velData[1];
 }
 
-void readTargetVel(float &v0, float &v1)
+void readTargetSpeed(float &v0, float &v1)
 {
   double velData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
@@ -457,7 +466,7 @@ float getCutoffFreq(int motor_no)
 
 
 
-float setMaxVel(int motor_no, double max_vel)
+float setMaxSpeed(int motor_no, double max_vel)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
@@ -468,7 +477,7 @@ float setMaxVel(int motor_no, double max_vel)
   storage.end();
   return 1.0;
 }
-float getMaxVel(int motor_no)
+float getMaxSpeed(int motor_no)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 10.0;

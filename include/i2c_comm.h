@@ -8,136 +8,106 @@ const uint8_t MAX_I2C_BUFFER = 32;
 static uint8_t sendMsgBuffer[MAX_I2C_BUFFER];
 static uint8_t sendMsgLength = 0;
 
-void clearSendMsgBuffer(){
-  memset(sendMsgBuffer, 0, (size_t)MAX_I2C_BUFFER); 
-  // for (uint8_t i=0; i< MAX_I2C_BUFFER; i+=1){
-  //   sendMsgBuffer[i] = 0x00;
-  // }
-}
-// Pack float response into txBuffer
-void prepareResponse1(float res) {
-  sendMsgLength = 4;
-  memcpy(&sendMsgBuffer[0], &res, sizeof(float));
+// The arguments converted to integers
+int i2c_cmd;
+int i2c_cmd_pos;
+float i2c_arg1;
+float i2c_arg2;
+
+/* Clear the current command parameters */
+void i2c_resetCommand() {
+  i2c_cmd = 0;
+  i2c_cmd_pos = 0;
+  i2c_arg1 = 0.0;
+  i2c_arg2 = 0.0;
 }
 
+void clearSendMsgBuffer(){
+  memset(sendMsgBuffer, 0, (size_t)MAX_I2C_BUFFER); 
+}
+
+// Pack float response into txBuffer
 void prepareResponse2(float res0, float res1) {
   sendMsgLength = 8;
   memcpy(&sendMsgBuffer[0], &res0, sizeof(float));
   memcpy(&sendMsgBuffer[4], &res1, sizeof(float));
 }
 
-void prepareResponse4(float res0, float res1, float res2, float res3) {
-  sendMsgLength = 16;
-  memcpy(&sendMsgBuffer[0], &res0, sizeof(float));
-  memcpy(&sendMsgBuffer[4], &res1, sizeof(float));
-  memcpy(&sendMsgBuffer[8], &res2, sizeof(float));
-  memcpy(&sendMsgBuffer[12], &res3, sizeof(float));
-}
-
 // Example command handler
-void handleCommand(uint8_t cmd, uint8_t* data) {
-
+void i2c_runCommand() {
   gpio_set_level((gpio_num_t)LED_PIN, 1);
 
-  switch (cmd) {
-    case WRITE_VEL: {
-      float v0, v1;
-      memcpy(&v0, &data[0], sizeof(float));
-      memcpy(&v1, &data[4], sizeof(float));
-      writeSpeed(v0, v1);
+  float r0 = 0.0f;
+  float r1 = 0.0f;
+
+  switch (i2c_cmd) {
+
+    case WRITE_SPEED:
+      writeSpeed(i2c_arg1, i2c_arg2);
       gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
-    }
 
+    case READ_SPEED:
+      readSpeed(r0, r1);
+      memcpy(sendMsgBuffer, &r0, 4);
+      memcpy(sendMsgBuffer + 4, &r1, 4);
+      prepareResponse2(r0, r1);
+      break;
 
-    case WRITE_PWM: {
-      float pwm0, pwm1;
-      memcpy(&pwm0, &data[0], sizeof(float));
-      memcpy(&pwm1, &data[4], sizeof(float));
-      writePWM((int)pwm0, (int)pwm1);
+    case WRITE_PWM:
+      writePWM((int)i2c_arg1, (int)i2c_arg2);
       gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
-    }
 
-    case READ_MOTOR_DATA: {
-      float pos0, pos1, v0, v1;
-      readPos(pos0, pos1);
-      readFilteredVel(v0, v1);
-      prepareResponse4(pos0, pos1, v0, v1);
+    case READ_POS:
+      readPos(r0, r1);
+      memcpy(sendMsgBuffer, &r0, 4);
+      memcpy(sendMsgBuffer + 4, &r1, 4);
+      prepareResponse2(r0, r1);
       break;
-    }
 
-    case READ_POS: {
-      float pos0, pos1;
-      readPos(pos0, pos1);
-      prepareResponse2(pos0, pos1);
+    case GET_MAX_SPEED:
+      r0 = getMaxSpeed((int)i2c_arg1);
+      memcpy(sendMsgBuffer, &r0, 4);
+      memcpy(sendMsgBuffer + 4, &r1, 4);
+      prepareResponse2(r0, r1);
       break;
-    }
-
-
-    case READ_VEL: {
-      float v0, v1;
-      readFilteredVel(v0, v1);
-      prepareResponse2(v0, v1);
-      break;
-    }
-
-
-    case READ_UVEL: {
-      float v0, v1;
-      readUnfilteredVel(v0, v1);
-      prepareResponse2(v0, v1);
-      break;
-    }
-
-
-    case SET_CMD_TIMEOUT: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setCmdTimeout((int)value);
+    
+    case SET_PID_MODE:
+      setPidModeFunc((int)i2c_arg2);
       gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
-    }
 
-    case GET_CMD_TIMEOUT: {
-      float res = getCmdTimeout();
-      prepareResponse1(res);
+    case GET_PID_MODE:
+      r0 = getPidModeFunc();
+      memcpy(sendMsgBuffer, &r0, 4);
+      memcpy(sendMsgBuffer + 4, &r1, 4);
+      prepareResponse2(r0, r1);
       break;
-    }
 
-
-    case SET_PID_MODE: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setPidModeFunc((int)value);
+    case SET_CMD_TIMEOUT:
+      setCmdTimeout((int)i2c_arg2);
       gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
-    }
 
-    case GET_PID_MODE: {
-      float res = getPidModeFunc();
-      prepareResponse1(res);
+    case GET_CMD_TIMEOUT:
+      //read Command Timeout
+      r0 = getCmdTimeout();
+      memcpy(sendMsgBuffer, &r0, 4);
+      memcpy(sendMsgBuffer + 4, &r1, 4);
+      prepareResponse2(r0, r1);
       break;
-    }
 
-    case GET_MAX_VEL: {
-      uint8_t pos = data[0];
-      float res = getMaxVel((int)pos);
-      prepareResponse1(res);
+    case CLEAR:
+      // clear all inintializing variables
+      r0 = clearDataBuffer();
+      memcpy(sendMsgBuffer, &r0, 4);
+      memcpy(sendMsgBuffer + 4, &r1, 4);
+      prepareResponse2(r0, r1);
       break;
-    }
 
-    case CLEAR_DATA_BUFFER: {
-      float res = clearDataBuffer();
-      prepareResponse1(res);
+    default:
       break;
-    }
-
-    default: {
-      float error = 0.0;
-      prepareResponse1(error);
-      break;
-    }
   }
 }
 
@@ -152,78 +122,32 @@ void onRequest() {
 }
 
 // Called when master sends data
-void onReceive(int numBytes) {
-  static uint8_t readState = 0;
-  static uint8_t msgCmd, msgLength;
-  static uint8_t msgBuffer[MAX_I2C_BUFFER];
-  static uint8_t msgIndex = 0;
-  static uint8_t msgChecksum = 0;
-
-  while (Wire.available()) {
-    uint8_t b = Wire.read();
-
-    switch (readState) {
-      case 0: // Wait for start
-        if (b == START_BYTE) {
-          readState = 1;
-          msgChecksum = b;
-        }
-        break;
-
-      case 1: // Command
-        msgCmd = b;
-        msgChecksum += b;
-        readState = 2;
-        break;
-
-      case 2: // Length
-        msgLength = b;
-        msgChecksum += b;
-        if (msgLength==0){
-          readState = 4;
-        }
-        else{
-          msgIndex = 0;
-          readState = 3;
-        }
-        break;
-
-      case 3: // Payload
-        msgBuffer[msgIndex++] = b;
-        msgChecksum += b;
-        if (msgIndex >= msgLength) readState = 4;
-        break;
-
-      case 4: // Checksum
-        if ((msgChecksum & 0xFF) == b) {
-          handleCommand(msgCmd, msgBuffer);
-        } else {
-          float error = 0.0;
-          switch(msgLength){
-            case 4: {
-              prepareResponse1(error);
-              break;
-            }
-            case 8: {
-              prepareResponse2(error, error);
-              break;
-            }
-            case 16: {
-              prepareResponse4(error, error, error, error);
-              break;
-            }
-            default: {
-              prepareResponse1(error);
-              break;
-            }
-          }
-          
-        }
-        readState = 0; // reset for next packet
-        break;
-    }
+void onReceive(int numBytes)
+{
+  // Expect exactly 3 floats = 12 bytes
+  if (numBytes != 12) {
+    // Drain buffer if size is wrong
+    while (Wire.available()) Wire.read();
+    return;
   }
 
+  uint8_t rxBuf[12];
+
+  for (uint8_t i = 0; i < 12; i++) {
+    rxBuf[i] = Wire.read();
+  }
+
+  // Unpack floats
+  float cmd_f;
+  memcpy(&cmd_f,  &rxBuf[0],  4);
+  memcpy(&i2c_arg1, &rxBuf[4],  4);
+  memcpy(&i2c_arg2, &rxBuf[8],  4);
+
+  // Command as integer
+  i2c_cmd = (int)cmd_f;
+
+  // Execute command
+  i2c_runCommand();
 }
 
 #endif
