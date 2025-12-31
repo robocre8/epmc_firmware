@@ -28,6 +28,9 @@ void resetCommand() {
 void runCommand() {
   gpio_set_level((gpio_num_t)LED_PIN, 1);
 
+  float r0 = 0.0f;
+  float r1 = 0.0f;
+
   switch (cmd) {
     case WRITE_SPEED: {
       writeSpeed(arg1, arg2);
@@ -36,9 +39,8 @@ void runCommand() {
 
     case READ_SPEED: {
       //read actual speed
-      float v0, v1;
-      readSpeed(v0, v1);
-      send_data(v0, v1);
+      readSpeed(r0, r1);
+      send_data(r0, r1);
       break;
     }
 
@@ -49,18 +51,16 @@ void runCommand() {
     }
 
     case READ_POS: {
-      float pos0, pos1;
       // read pos
-      readPos(pos0, pos1);
-      send_data(pos0, pos1);
+      readPos(r0, r1);
+      send_data(r0, r1);
       break;
     }
 
     case READ_TSPEED: {
-      float v0, v1;
       // read target speed
-      readTargetSpeed(v0, v1);
-      send_data(v0, v1);
+      readTargetSpeed(r0, r1);
+      send_data(r0, r1);
       break;
     }
 
@@ -72,8 +72,8 @@ void runCommand() {
 
     case GET_PPR: {
       //read PPR
-      float res = getEncoderPPR((int)arg1);
-      send_data(res);
+      r0 = getEncoderPPR((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -85,8 +85,8 @@ void runCommand() {
 
     case GET_KP: {
       //read KP
-      float res = getMotorKp((int)arg1);
-      send_data(res);
+      r0 = getMotorKp((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -99,8 +99,8 @@ void runCommand() {
 
     case GET_KI: {
       //read KI
-      float res = getMotorKi((int)arg1);
-      send_data(res);
+      r0 = getMotorKi((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -113,8 +113,8 @@ void runCommand() {
 
     case GET_KD: {
       //read KD
-      float res = getMotorKd((int)arg1);
-      send_data(res);
+      r0 = getMotorKd((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -126,8 +126,8 @@ void runCommand() {
 
     case GET_RDIR: {
       //read KI
-      float res = getRdir((int)arg1);
-      send_data(res);
+      r0 = getRdir((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -139,8 +139,8 @@ void runCommand() {
 
     case GET_CF: {
       //read Cutoff Freq
-      float res = getCutoffFreq((int)arg1);
-      send_data(res);
+      r0 = getCutoffFreq((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -152,8 +152,8 @@ void runCommand() {
 
     case GET_MAX_SPEED: {
       //read Motor Max Speed
-      float res = getMaxSpeed((int)arg1);
-      send_data(res);
+      r0 = getMaxSpeed((int)arg1);
+      send_data(r0, r1);
       break;
     }
 
@@ -165,8 +165,8 @@ void runCommand() {
 
     case GET_PID_MODE: {
       //read PID Mode
-      float res = getPidModeFunc();
-      send_data(res);
+      r0 = getPidModeFunc();
+      send_data(r0, r1);
       break;
     }
 
@@ -178,8 +178,8 @@ void runCommand() {
 
     case GET_CMD_TIMEOUT: {
       //read Command Timeout
-      float res = getCmdTimeout();
-      send_data(res);
+      r0 = getCmdTimeout();
+      send_data(r0, r1);
       break;
     }
 
@@ -191,23 +191,23 @@ void runCommand() {
 
     case GET_I2C_ADDR: {
       //read I2C Address
-      float res = getI2cAddress();
-      send_data(res);
+      r0 = getI2cAddress();
+      send_data(r0, r1);
       break;
     }
 
 
     case RESET: {
       //reset all stored parameters return 1.0 if successfull
-      float res = triggerResetParams();
-      send_data(res);
+      r0 = triggerResetParams();
+      send_data(r0, r1);
       break;
     }
 
     case CLEAR: {
       // clear all inintializing variables
-      float res = clearDataBuffer();
-      send_data(res);
+      r0 = clearDataBuffer();
+      send_data(r0, r1);
       break;
     }
   }

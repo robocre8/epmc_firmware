@@ -14,13 +14,6 @@ int i2c_cmd_pos;
 float i2c_arg1;
 float i2c_arg2;
 
-void i2c_send_data(float data1=0.0, float data2=0.0){
-  Serial.print(data1,4);
-  Serial.print(' ');
-  Serial.println(data2,4);
-  Serial.flush();
-}
-
 /* Clear the current command parameters */
 void i2c_resetCommand() {
   i2c_cmd = 0;
