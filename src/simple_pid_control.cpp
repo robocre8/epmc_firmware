@@ -1,6 +1,6 @@
 #include "simple_pid_control.h"
 
-SimplePID::SimplePID(double Kp, double Ki, double Kd, double out_min, double out_max)
+SimplePID::SimplePID(float Kp, float Ki, float Kd, float out_min, float out_max)
 {
   reset();
 
@@ -11,7 +11,7 @@ SimplePID::SimplePID(double Kp, double Ki, double Kd, double out_min, double out
   outMin = out_min;
 }
 
-void SimplePID::setParameters(double Kp, double Ki, double Kd, double out_min, double out_max)
+void SimplePID::setParameters(float Kp, float Ki, float Kd, float out_min, float out_max)
 {
   kp = Kp;
   ki = Ki;
@@ -20,29 +20,29 @@ void SimplePID::setParameters(double Kp, double Ki, double Kd, double out_min, d
   outMin = out_min;
 }
 
-void SimplePID::setGains(double Kp, double Ki, double Kd)
+void SimplePID::setGains(float Kp, float Ki, float Kd)
 {
   kp = Kp;
   ki = Ki;
   kd = Kd;
 }
 
-void SimplePID::setKp(double Kp)
+void SimplePID::setKp(float Kp)
 {
   kp = Kp;
 }
 
-void SimplePID::setKi(double Ki)
+void SimplePID::setKi(float Ki)
 {
   ki = Ki;
 }
 
-void SimplePID::setKd(double Kd)
+void SimplePID::setKd(float Kd)
 {
   kd = Kd;
 }
 
-void SimplePID::setOutLimit(double out_max, double out_min)
+void SimplePID::setOutLimit(float out_max, float out_min)
 {
   outMax = out_max;
   outMin = out_min;
@@ -53,9 +53,9 @@ void SimplePID::begin()
   reset();
 }
 
-double SimplePID::compute(double target, double input)
+float SimplePID::compute(float target, float input)
 {
-  double dt = (double)(esp_timer_get_time() - lastTime)/1000000.0;
+  float dt = (float)(esp_timer_get_time() - lastTime)/1000000.0;
 
   p_error = target - input;
 

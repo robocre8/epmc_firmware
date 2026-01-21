@@ -5,12 +5,17 @@
 #include "driver/periph_ctrl.h"
 
 //------------------------------------------------------------------------------//
+
 void IRAM_ATTR readEncoder0()
 {
   uint64_t currentTime = esp_timer_get_time();
-  encoder[0].freqPerTick = 1000000.00 / (double)(currentTime - encoder[0].oldFreqTime);
+  uint64_t dt = currentTime - encoder[0].oldFreqTime;
+  if (dt > 0) {
+    encoder[0].freqPerTick = 1000000.0 / (float)dt;
+  }
 
-  if (digitalRead(encoder[0].clkPin) == digitalRead(encoder[0].dirPin))
+  if (gpio_get_level((gpio_num_t)encoder[0].clkPin) ==
+    gpio_get_level((gpio_num_t)encoder[0].dirPin))
   {
     encoder[0].tickCount -= 1;
     encoder[0].frequency = -encoder[0].freqPerTick / encoder[0].pulsePerRev;
@@ -28,9 +33,13 @@ void IRAM_ATTR readEncoder0()
 void IRAM_ATTR readEncoder1()
 {
   uint64_t currentTime = esp_timer_get_time();
-  encoder[1].freqPerTick = 1000000.00 / (double)(currentTime - encoder[1].oldFreqTime);
+  uint64_t dt = currentTime - encoder[1].oldFreqTime;
+  if (dt > 0) {
+    encoder[1].freqPerTick = 1000000.0 / (float)dt;
+  }
 
-  if (digitalRead(encoder[1].clkPin) == digitalRead(encoder[1].dirPin))
+  if (gpio_get_level((gpio_num_t)encoder[1].clkPin) ==
+    gpio_get_level((gpio_num_t)encoder[1].dirPin))
   {
     encoder[1].tickCount -= 1;
     encoder[1].frequency = -encoder[1].freqPerTick / encoder[1].pulsePerRev;
@@ -78,7 +87,7 @@ void pidInit()
 //---------------------------------------------------------------------------------------------
 // Timing variables in esp_timer_get_timeeconds
 // please do not adjust any of the values as it can affect important operations
-uint64_t serialCommTime, serialCommTimeInterval = 5000;
+// uint64_t serialCommTime, serialCommTimeInterval = 5000;
 uint64_t sensorReadTime, sensorReadTimeInterval = 1000;
 uint64_t pidTime, pidTimeInterval = 2500;
 //---------------------------------------------------------------------------------------------
@@ -94,9 +103,9 @@ void setup()
   // Serial.begin(921600);
   // Serial.setTimeout(2);
 
+  Wire.begin(i2cAddress);
   Wire.onReceive(onReceive);
   Wire.onRequest(onRequest);
-  Wire.begin(i2cAddress);
 
   analogWriteResolution(8); // 8 Bit resolution
   analogWriteFrequency(1000); // 1kHz

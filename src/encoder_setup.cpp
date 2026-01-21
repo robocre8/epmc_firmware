@@ -13,23 +13,30 @@ QuadEncoder::QuadEncoder(int clk_pin, int dir_pin, float ppr)
   checkFreqTime = esp_timer_get_time();
 }
 
-void QuadEncoder::setPulsePerRev(double ppr)
+void QuadEncoder::setPulsePerRev(float ppr)
 {
   pulsePerRev = ppr;
 }
 
-double QuadEncoder::getAngPos()
+void QuadEncoder::clearTickCounts()
+{
+  portENTER_CRITICAL(&encoderMux);
+  tickCount=0;
+  portEXIT_CRITICAL(&encoderMux);
+}
+
+float QuadEncoder::getAngPos()
 {
   portENTER_CRITICAL(&encoderMux);
   long ticks = tickCount;
   portEXIT_CRITICAL(&encoderMux);
-  return (2.00 * PI * (double)ticks) / pulsePerRev;
+  return (2.00 * PI * (float)ticks) / pulsePerRev;
 }
 
-double QuadEncoder::getAngVel()
+float QuadEncoder::getAngVel()
 {
   portENTER_CRITICAL(&encoderMux);
-  double freq = frequency;
+  float freq = frequency;
   portEXIT_CRITICAL(&encoderMux);
   return 2.00 * PI * freq;
 }
@@ -41,8 +48,10 @@ void QuadEncoder::setStopFreqInUs(uint64_t freq)
 
 void QuadEncoder::resetFrequency()
 {
-  if (esp_timer_get_time() - checkFreqTime >= freqSampleTime)
+  uint64_t now = esp_timer_get_time();
+  if (now - checkFreqTime >= freqSampleTime)
   {
     frequency = 0;
+    checkFreqTime = now; // update timestamp
   }
 }

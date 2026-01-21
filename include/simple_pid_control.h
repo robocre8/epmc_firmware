@@ -5,23 +5,23 @@
 
 class SimplePID {
   public:
-    SimplePID(double Kp, double Ki, double Kd, double out_min, double out_max);
+    SimplePID(float Kp, float Ki, float Kd, float out_min, float out_max);
 
-    void setParameters(double Kp, double Ki, double Kd, double out_min, double out_max);
-    void setGains(double Kp, double Ki, double Kd);
-    void setKp(double Kp);
-    void setKi(double Ki);
-    void setKd(double Kd);
-    void setOutLimit(double out_max, double out_min);
+    void setParameters(float Kp, float Ki, float Kd, float out_min, float out_max);
+    void setGains(float Kp, float Ki, float Kd);
+    void setKp(float Kp);
+    void setKi(float Ki);
+    void setKd(float Kd);
+    void setOutLimit(float out_max, float out_min);
     void begin();
     void reset();
-    double compute(double target, double actual);
+    float compute(float target, float actual);
 
   private:
-    double p_error, d_error, i_term, prevInput, prevTarget;
+    float p_error, d_error, i_term, prevInput, prevTarget;
     uint64_t lastTime;
-    double kp, ki, kd;
-    double outMax, outMin, output;
+    float kp, ki, kd;
+    float outMax, outMin, output;
 };
 
 #endif

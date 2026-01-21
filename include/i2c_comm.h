@@ -1,12 +1,16 @@
+// NOTE: This header must be included in exactly one source file
+
 #ifndef I2C_COMM_H
 #define I2C_COMM_H
 
 #include <Wire.h>
 #include "command_functions.h"
 
-const uint8_t MAX_I2C_BUFFER = 32;
+static const uint8_t MAX_I2C_BUFFER = 32;
 static uint8_t sendMsgBuffer[MAX_I2C_BUFFER];
 static uint8_t sendMsgLength = 0;
+
+static_assert(sizeof(float) == 4, "Float must be 32-bit");
 
 void clearSendMsgBuffer(){
   memset(sendMsgBuffer, 0, (size_t)MAX_I2C_BUFFER); 
@@ -139,6 +143,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       break;
     }
   }
+  
 }
 
 
@@ -149,6 +154,7 @@ void onRequest() {
   Wire.write(sendMsgBuffer, sendMsgLength);
   clearSendMsgBuffer();
   gpio_set_level((gpio_num_t)LED_PIN, 0);
+  sendMsgLength = 0;
 }
 
 // Called when master sends data
@@ -179,10 +185,16 @@ void onReceive(int numBytes) {
       case 2: // Length
         msgLength = b;
         msgChecksum += b;
-        if (msgLength==0){
-          readState = 4;
+
+        if (msgLength > MAX_I2C_BUFFER) {
+          readState = 0;
+          msgChecksum = 0;
+          break;
         }
-        else{
+
+        if (msgLength == 0) {
+          readState = 4;
+        } else {
           msgIndex = 0;
           readState = 3;
         }
@@ -199,26 +211,9 @@ void onReceive(int numBytes) {
           handleCommand(msgCmd, msgBuffer);
         } else {
           float error = 0.0;
-          switch(msgLength){
-            case 4: {
-              prepareResponse1(error);
-              break;
-            }
-            case 8: {
-              prepareResponse2(error, error);
-              break;
-            }
-            case 16: {
-              prepareResponse4(error, error, error, error);
-              break;
-            }
-            default: {
-              prepareResponse1(error);
-              break;
-            }
-          }
-          
+          prepareResponse1(error);
         }
+  
         readState = 0; // reset for next packet
         break;
     }

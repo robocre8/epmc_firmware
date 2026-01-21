@@ -9,40 +9,42 @@
 #include "simple_pid_control.h"
 
 //------------ Communication Command IDs --------------//
-const uint8_t START_BYTE = 0xAA;
-const uint8_t WRITE_VEL = 0x01;
-const uint8_t WRITE_PWM = 0x02;
-const uint8_t READ_POS = 0x03;
-const uint8_t READ_VEL = 0x04;
-const uint8_t READ_UVEL = 0x05;
-const uint8_t READ_TVEL = 0x06;
-const uint8_t SET_PPR = 0x07;
-const uint8_t GET_PPR = 0x08;
-const uint8_t SET_KP = 0x09;
-const uint8_t GET_KP = 0x0A;
-const uint8_t SET_KI = 0x0B;
-const uint8_t GET_KI = 0x0C;
-const uint8_t SET_KD = 0x0D;
-const uint8_t GET_KD = 0x0E;
-const uint8_t SET_RDIR = 0x0F;
-const uint8_t GET_RDIR = 0x10;
-const uint8_t SET_CUT_FREQ = 0x11;
-const uint8_t GET_CUT_FREQ = 0x12;
-const uint8_t SET_MAX_VEL = 0x13;
-const uint8_t GET_MAX_VEL = 0x14;
-const uint8_t SET_PID_MODE = 0x15;
-const uint8_t GET_PID_MODE = 0x16;
-const uint8_t SET_CMD_TIMEOUT = 0x17;
-const uint8_t GET_CMD_TIMEOUT = 0x18;
-const uint8_t SET_I2C_ADDR = 0x19;
-const uint8_t GET_I2C_ADDR = 0x1A;
-const uint8_t RESET_PARAMS = 0x1B;
-const uint8_t READ_MOTOR_DATA = 0x2A;
-const uint8_t CLEAR_DATA_BUFFER = 0x2C;
+enum CommandID : uint8_t {
+  START_BYTE = 0xAA,
+  WRITE_VEL = 0x01,
+  WRITE_PWM = 0x02,
+  READ_POS = 0x03,
+  READ_VEL = 0x04,
+  READ_UVEL = 0x05,
+  READ_TVEL = 0x06,
+  SET_PPR = 0x07,
+  GET_PPR = 0x08,
+  SET_KP = 0x09,
+  GET_KP = 0x0A,
+  SET_KI = 0x0B,
+  GET_KI = 0x0C,
+  SET_KD = 0x0D,
+  GET_KD = 0x0E,
+  SET_RDIR = 0x0F,
+  GET_RDIR = 0x10,
+  SET_CUT_FREQ = 0x11,
+  GET_CUT_FREQ = 0x12,
+  SET_MAX_VEL = 0x13,
+  GET_MAX_VEL = 0x14,
+  SET_PID_MODE = 0x15,
+  GET_PID_MODE = 0x16,
+  SET_CMD_TIMEOUT = 0x17,
+  GET_CMD_TIMEOUT = 0x18,
+  SET_I2C_ADDR = 0x19,
+  GET_I2C_ADDR = 0x1A,
+  RESET_PARAMS = 0x1B,
+  READ_MOTOR_DATA = 0x2A,
+  CLEAR_DATA_BUFFER = 0x2C,
+};
 //---------------------------------------------------//
 
 //--------------- global variables -----------------//
-int LED_PIN = 2;
+const int LED_PIN = 2;
 
 const int num_of_motors = 2;
 
@@ -56,7 +58,7 @@ MotorControl motor[num_of_motors] = {
   MotorControl(IN1_1, IN2_1), // motor 1
 };
 
-double enc_ppr[num_of_motors]={
+float enc_ppr[num_of_motors]={
   1000.0, // motor 0 encoder pulse per revolution parameter
   1000.0, // motor 1 encoder pulse per revolution parameter
 };
@@ -73,7 +75,7 @@ QuadEncoder encoder[num_of_motors] = {
 
 // adaptive lowpass Filter
 const int filterOrder = 1;
-double cutOffFreq[num_of_motors] = {
+float cutOffFreq[num_of_motors] = {
   2.5, // motor 0 velocity filter cutoff frequency
   2.5, // motor 1 velocity filter cutoff frequency
 };
@@ -83,40 +85,40 @@ AdaptiveLowPassFilter velFilter[num_of_motors] = {
   AdaptiveLowPassFilter(filterOrder, cutOffFreq[1]), // motor 1 velocity filter
 };
 
-double filteredVel[num_of_motors] = {
+float filteredVel[num_of_motors] = {
   0.0,
   0.0,
 };
 
-double unfilteredVel[num_of_motors] = {
+float unfilteredVel[num_of_motors] = {
   0.0,
   0.0,
 };
 
 // motor PID parameters
-double outMin = -255.0, outMax = 255.0;
+float outMin = -255.0, outMax = 255.0;
 
-double kp[num_of_motors] = {
+float kp[num_of_motors] = {
   0.0,
   0.0,
 };
 
-double ki[num_of_motors] = {
+float ki[num_of_motors] = {
   0.0,
   0.0,
 };
 
-double kd[num_of_motors] = {
+float kd[num_of_motors] = {
   0.0,
   0.0,
 };
 
-double target[num_of_motors] = {
+float target[num_of_motors] = {
   0.0,
   0.0,
 };
 
-double output[num_of_motors] = {
+float output[num_of_motors] = {
   0.0,
   0.0,
 };
@@ -136,7 +138,7 @@ int rdir[num_of_motors] = {
 };
 
 // // maximum motor velocity that can be commanded
-double maxVel[num_of_motors] = {
+float maxVel[num_of_motors] = {
   10.0,
   10.0,
 };
@@ -202,13 +204,13 @@ void resetParamsInStorage(){
   storage.begin(params_ns, false);
 
   for (int i=0; i<num_of_motors; i+=1){
-    storage.putDouble(ppr_key[i], 1000.0);
-    storage.putDouble(kp_key[i], 0.0);
-    storage.putDouble(ki_key[i], 0.0);
-    storage.putDouble(kd_key[i], 0.0);
-    storage.putDouble(cf_key[i], 2.5);
+    storage.putFloat(ppr_key[i], 1000.0);
+    storage.putFloat(kp_key[i], 0.0);
+    storage.putFloat(ki_key[i], 0.0);
+    storage.putFloat(kd_key[i], 0.0);
+    storage.putFloat(cf_key[i], 2.5);
     storage.putInt(rdir_key[i], 1);
-    storage.putDouble(maxVel_key[i], 10.0);
+    storage.putFloat(maxVel_key[i], 10.0);
   }
   storage.putUChar(i2cAddress_key, 0x55);
 
@@ -237,13 +239,13 @@ void loadStoredParams(){
   storage.begin(params_ns, true);
 
   for (int i=0; i<num_of_motors; i+=1){
-    enc_ppr[i] = storage.getDouble(ppr_key[i], 1000.0);
-    kp[i] = storage.getDouble(kp_key[i], 0.0);
-    ki[i] = storage.getDouble(ki_key[i], 0.0);
-    kd[i] = storage.getDouble(kd_key[i], 0.0);
-    cutOffFreq[i] = storage.getDouble(cf_key[i], 2.5);
+    enc_ppr[i] = storage.getFloat(ppr_key[i], 1000.0);
+    kp[i] = storage.getFloat(kp_key[i], 0.0);
+    ki[i] = storage.getFloat(ki_key[i], 0.0);
+    kd[i] = storage.getFloat(kd_key[i], 0.0);
+    cutOffFreq[i] = storage.getFloat(cf_key[i], 2.5);
     rdir[i] = storage.getInt(rdir_key[i], 1);
-    maxVel[i] = storage.getDouble(maxVel_key[i], 10.0);
+    maxVel[i] = storage.getFloat(maxVel_key[i], 10.0);
   }
   i2cAddress = storage.getUChar(i2cAddress_key, 0x55);
 
@@ -261,7 +263,7 @@ float writeSpeed(float v0, float v1)
   for (int i = 0; i < num_of_motors; i += 1)
   {
     float tVel = constrain(targetVel[i], -1.00 * maxVel[i], maxVel[i]);
-    target[i] = (double)rdir[i] * tVel;
+    target[i] = (float)rdir[i] * tVel;
   }
   motor_is_commanded = true;
   // cmdVelTimeout = esp_timer_get_time();
@@ -286,7 +288,7 @@ float writePWM(int pwm0, int pwm1)
 
 void readPos(float &pos0, float &pos1)
 {  
-  double posData[num_of_motors];
+  float posData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
     posData[i] = rdir[i] * encoder[i].getAngPos();
   }
@@ -296,9 +298,9 @@ void readPos(float &pos0, float &pos1)
 
 void readFilteredVel(float &v0, float &v1)
 {
-  double velData[num_of_motors];
+  float velData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
-    velData[i] = (double)rdir[i] * filteredVel[i];
+    velData[i] = (float)rdir[i] * filteredVel[i];
   }
   v0 = (float)velData[0];
   v1 = (float)velData[1];
@@ -306,9 +308,9 @@ void readFilteredVel(float &v0, float &v1)
 
 void readUnfilteredVel(float &v0, float &v1)
 {
-  double velData[num_of_motors];
+  float velData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
-    velData[i] = (double)rdir[i] * unfilteredVel[i];
+    velData[i] = (float)rdir[i] * unfilteredVel[i];
   }
   v0 = (float)velData[0];
   v1 = (float)velData[1];
@@ -316,22 +318,22 @@ void readUnfilteredVel(float &v0, float &v1)
 
 void readTargetVel(float &v0, float &v1)
 {
-  double velData[num_of_motors];
+  float velData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
-    velData[i] = (double)rdir[i] * target[i];
+    velData[i] = (float)rdir[i] * target[i];
   }
   v0 = (float)velData[0];
   v1 = (float)velData[1];
 }
 
-float setEncoderPPR(int motor_no, double ppr)
+float setEncoderPPR(int motor_no, float ppr)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
 
   enc_ppr[motor_no] = ppr;
   storage.begin(params_ns, false);
-  storage.putDouble(ppr_key[motor_no], enc_ppr[motor_no]);
+  storage.putFloat(ppr_key[motor_no], enc_ppr[motor_no]);
   storage.end();
   encoder[motor_no].setPulsePerRev(enc_ppr[motor_no]);
   return 1.0;
@@ -345,14 +347,14 @@ float getEncoderPPR(int motor_no)
 }
 
 
-float setMotorKp(int motor_no, double Kp)
+float setMotorKp(int motor_no, float Kp)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
 
   kp[motor_no] = Kp;
   storage.begin(params_ns, false);
-  storage.putDouble(kp_key[motor_no], kp[motor_no]);
+  storage.putFloat(kp_key[motor_no], kp[motor_no]);
   storage.end();
   pidMotor[motor_no].setKp(kp[motor_no]);
   pidMotor[motor_no].begin();
@@ -367,14 +369,14 @@ float getMotorKp(int motor_no)
 }
 
 
-float setMotorKi(int motor_no, double Ki)
+float setMotorKi(int motor_no, float Ki)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
 
   ki[motor_no] = Ki;
   storage.begin(params_ns, false);
-  storage.putDouble(ki_key[motor_no], ki[motor_no]);
+  storage.putFloat(ki_key[motor_no], ki[motor_no]);
   storage.end();
   pidMotor[motor_no].setKi(ki[motor_no]);
   pidMotor[motor_no].begin();
@@ -389,14 +391,14 @@ float getMotorKi(int motor_no)
 }
 
 
-float setMotorKd(int motor_no, double Kd)
+float setMotorKd(int motor_no, float Kd)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
 
   kd[motor_no] = Kd;
   storage.begin(params_ns, false);
-  storage.putDouble(kd_key[motor_no], kd[motor_no]);
+  storage.putFloat(kd_key[motor_no], kd[motor_no]);
   storage.end();
   pidMotor[motor_no].setKd(kd[motor_no]);
   pidMotor[motor_no].begin();
@@ -411,7 +413,7 @@ float getMotorKd(int motor_no)
 }
 
 
-float setRdir(int motor_no, double dir)
+float setRdir(int motor_no, float dir)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
@@ -435,14 +437,14 @@ float getRdir(int motor_no)
 
 
 
-float setCutoffFreq(int motor_no, double f0)
+float setCutoffFreq(int motor_no, float f0)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
 
   cutOffFreq[motor_no] = f0;
   storage.begin(params_ns, false);
-  storage.putDouble(cf_key[motor_no], cutOffFreq[motor_no]);
+  storage.putFloat(cf_key[motor_no], cutOffFreq[motor_no]);
   storage.end();
   velFilter[motor_no].setCutOffFreq(cutOffFreq[motor_no]);
   return 1.0;
@@ -457,14 +459,14 @@ float getCutoffFreq(int motor_no)
 
 
 
-float setMaxVel(int motor_no, double max_vel)
+float setMaxVel(int motor_no, float max_vel)
 {
   if (motor_no<0 || motor_no>num_of_motors-1)
     return 0.0;
 
   maxVel[motor_no] = fabs(max_vel);
   storage.begin(params_ns, false);
-  storage.putDouble(maxVel_key[motor_no], maxVel[motor_no]);
+  storage.putFloat(maxVel_key[motor_no], maxVel[motor_no]);
   storage.end();
   return 1.0;
 }
@@ -534,7 +536,7 @@ float clearDataBuffer()
 {
   for (int i = 0; i < num_of_motors; i += 1)
   {
-    encoder[i].tickCount = 0;
+    encoder[i].clearTickCounts();
     filteredVel[i] = 0.0;
     unfilteredVel[i] = 0.0;
     target[i] = 0.0;
