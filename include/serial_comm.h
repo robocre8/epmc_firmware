@@ -21,7 +21,9 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
     case WRITE_VEL: {
       float v0 = readFloat(data, 0);
       float v1 = readFloat(data, 4);
-      writeSpeed(v0, v1);
+      float v2 = readFloat(data, 8);
+      float v3 = readFloat(data, 12);
+      writeSpeed(v0, v1, v2, v3);
       break;
     }
 
@@ -29,19 +31,23 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
     case WRITE_PWM: {
       float pwm0 = readFloat(data, 0);
       float pwm1 = readFloat(data, 4);
-      writePWM((int)pwm0, (int)pwm1);
+      float pwm2 = readFloat(data, 8);
+      float pwm3 = readFloat(data, 12);
+      writePWM((int)pwm0, (int)pwm1, (int)pwm2, (int)pwm3);
       break;
     }
 
 
     case READ_POS: {
-      float pos0, pos1;
-      readPos(pos0, pos1);
+      float pos0, pos1, pos2, pos3;
+      readPos(pos0, pos1, pos2, pos3);
 
-      uint8_t tx[8];
+      uint8_t tx[16];
       size_t tx_len = 0;
       memcpy(&tx[tx_len], &pos0, sizeof(pos0)); tx_len += 4;
       memcpy(&tx[tx_len], &pos1, sizeof(pos1)); tx_len += 4;
+      memcpy(&tx[tx_len], &pos2, sizeof(pos2)); tx_len += 4;
+      memcpy(&tx[tx_len], &pos3, sizeof(pos3)); tx_len += 4;
 
       Serial.write(tx, tx_len);
       needsFlush = true;
@@ -50,13 +56,15 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
 
 
     case READ_VEL: {
-      float v0, v1;
-      readFilteredVel(v0, v1);
+      float v0, v1, v2, v3;
+      readFilteredVel(v0, v1, v2, v3);
 
-      uint8_t tx[8];
+      uint8_t tx[16];
       size_t tx_len = 0;
       memcpy(&tx[tx_len], &v0, sizeof(v0)); tx_len += 4;
       memcpy(&tx[tx_len], &v1, sizeof(v1)); tx_len += 4;
+      memcpy(&tx[tx_len], &v2, sizeof(v2)); tx_len += 4;
+      memcpy(&tx[tx_len], &v3, sizeof(v3)); tx_len += 4;
 
       Serial.write(tx, tx_len);
       needsFlush = true;
@@ -65,13 +73,15 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
 
 
     case READ_UVEL: {
-      float v0, v1;
-      readUnfilteredVel(v0, v1);
+      float v0, v1, v2, v3;
+      readUnfilteredVel(v0, v1, v2, v3);
       
-      uint8_t tx[8];
+      uint8_t tx[16];
       size_t tx_len = 0;
       memcpy(&tx[tx_len], &v0, sizeof(v0)); tx_len += 4;
       memcpy(&tx[tx_len], &v1, sizeof(v1)); tx_len += 4;
+      memcpy(&tx[tx_len], &v2, sizeof(v2)); tx_len += 4;
+      memcpy(&tx[tx_len], &v3, sizeof(v3)); tx_len += 4;
 
       Serial.write(tx, tx_len);
       needsFlush = true;
@@ -80,13 +90,15 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
 
 
     case READ_TVEL: {
-      float v0, v1;
-      readTargetVel(v0, v1);
+      float v0, v1, v2, v3;
+      readTargetVel(v0, v1, v2, v3);
       
-      uint8_t tx[8];
+      uint8_t tx[16];
       size_t tx_len = 0;
       memcpy(&tx[tx_len], &v0, sizeof(v0)); tx_len += 4;
       memcpy(&tx[tx_len], &v1, sizeof(v1)); tx_len += 4;
+      memcpy(&tx[tx_len], &v2, sizeof(v2)); tx_len += 4;
+      memcpy(&tx[tx_len], &v3, sizeof(v3)); tx_len += 4;
 
       Serial.write(tx, tx_len);
       needsFlush = true;
@@ -256,16 +268,20 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
 
 
     case READ_MOTOR_DATA: {
-      float pos0, pos1, v0, v1;
-      readPos(pos0, pos1);
-      readFilteredVel(v0, v1);
+      float pos0, pos1, pos2, pos3, v0, v1, v2, v3;
+      readPos(pos0, pos1, pos2, pos3);
+      readFilteredVel(v0, v1, v2, v3);
 
-      uint8_t tx[16];
+      uint8_t tx[32];
       size_t tx_len = 0;
       memcpy(&tx[tx_len], &pos0, sizeof(pos0)); tx_len += 4;
       memcpy(&tx[tx_len], &pos1, sizeof(pos1)); tx_len += 4;
+      memcpy(&tx[tx_len], &pos2, sizeof(pos2)); tx_len += 4;
+      memcpy(&tx[tx_len], &pos3, sizeof(pos3)); tx_len += 4;
       memcpy(&tx[tx_len], &v0, sizeof(v0)); tx_len += 4;
       memcpy(&tx[tx_len], &v1, sizeof(v1)); tx_len += 4;
+      memcpy(&tx[tx_len], &v2, sizeof(v2)); tx_len += 4;
+      memcpy(&tx[tx_len], &v3, sizeof(v3)); tx_len += 4;
 
       Serial.write(tx, tx_len);
       needsFlush = true;

@@ -54,6 +54,54 @@ void IRAM_ATTR readEncoder1()
   encoder[1].checkFreqTime = currentTime;
 }
 
+void IRAM_ATTR readEncoder2()
+{
+  uint64_t currentTime = esp_timer_get_time();
+  uint64_t dt = currentTime - encoder[2].oldFreqTime;
+  if (dt > 0) {
+    encoder[2].freqPerTick = 1000000.0 / (float)dt;
+  }
+
+  if (gpio_get_level((gpio_num_t)encoder[2].clkPin) ==
+    gpio_get_level((gpio_num_t)encoder[2].dirPin))
+  {
+    encoder[2].tickCount -= 1;
+    encoder[2].frequency = -encoder[2].freqPerTick / encoder[2].pulsePerRev;
+  }
+  else
+  {
+    encoder[2].tickCount += 1;
+    encoder[2].frequency = encoder[2].freqPerTick / encoder[2].pulsePerRev;
+  }
+
+  encoder[2].oldFreqTime = currentTime;
+  encoder[2].checkFreqTime = currentTime;
+}
+
+void IRAM_ATTR readEncoder3()
+{
+  uint64_t currentTime = esp_timer_get_time();
+  uint64_t dt = currentTime - encoder[3].oldFreqTime;
+  if (dt > 0) {
+    encoder[3].freqPerTick = 1000000.0 / (float)dt;
+  }
+
+  if (gpio_get_level((gpio_num_t)encoder[3].clkPin) ==
+    gpio_get_level((gpio_num_t)encoder[3].dirPin))
+  {
+    encoder[3].tickCount -= 1;
+    encoder[3].frequency = -encoder[3].freqPerTick / encoder[3].pulsePerRev;
+  }
+  else
+  {
+    encoder[3].tickCount += 1;
+    encoder[3].frequency = encoder[3].freqPerTick / encoder[3].pulsePerRev;
+  }
+
+  encoder[3].oldFreqTime = currentTime;
+  encoder[3].checkFreqTime = currentTime;
+}
+
 void encoderInit()
 {
   for (int i = 0; i < num_of_motors; i += 1)
@@ -63,6 +111,8 @@ void encoderInit()
 
   attachInterrupt(digitalPinToInterrupt(encoder[0].clkPin), readEncoder0, RISING);
   attachInterrupt(digitalPinToInterrupt(encoder[1].clkPin), readEncoder1, RISING);
+  attachInterrupt(digitalPinToInterrupt(encoder[2].clkPin), readEncoder2, RISING);
+  attachInterrupt(digitalPinToInterrupt(encoder[3].clkPin), readEncoder3, RISING);
 }
 
 //----------------------------------------------------------------------------------------------//
@@ -163,7 +213,7 @@ void loop()
   }
 
   // stop motor if target is zero.
-  if (abs(target[0]) < 0.001 && abs(target[1]) < 0.001)
+  if (abs(target[0]) < 0.001 && abs(target[1]) < 0.001 && abs(target[2]) < 0.001 && abs(target[3]) < 0.001)
   {
     if (pidMode == 1)
     {
@@ -193,8 +243,8 @@ void loop()
   {
     if ((esp_timer_get_time() - cmdVelTimeout) >= cmdVelTimeoutInterval)
     {
-      if (pidMode == 1) writeSpeed(0.0, 0.0);
-      else writePWM(0, 0);
+      if (pidMode == 1) writeSpeed(0.0, 0.0, 0.0, 0.0);
+      else writePWM(0, 0, 0, 0);
     }
   }
 }
