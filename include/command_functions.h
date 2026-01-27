@@ -49,13 +49,13 @@ const int LED_PIN = 2;
 const int num_of_motors = 4;
 
 // motor 0 H-Bridge Connection
-int IN1_0 = 5, IN2_0 = 17, EN_0 = 16;
+int IN1_0 = 5, IN2_0 = 17;
 // motor 1 H-Bridge Connection
-int IN1_1 = 19, IN2_1 = 18, EN_1 = 23;
+int IN1_1 = 19, IN2_1 = 18;
 // motor 2 H-Bridge Connection
-int IN1_2 = 26, IN2_2 = 27, EN_2 = 12;
+int IN1_2 = 26, IN2_2 = 27;
 // motor 3 H-Bridge Connection
-int IN1_3 = 33, IN2_3 = 25, EN_3 = 32;
+int IN1_3 = 33, IN2_3 = 25;
 
 MotorControl motor[num_of_motors] = {
   MotorControl(IN1_0, IN2_0), // motor 0
