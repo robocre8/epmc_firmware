@@ -40,8 +40,17 @@ enum CommandID : uint8_t {
   RESET_PARAMS = 0x1B,
   READ_MOTOR_DATA = 0x2A,
   CLEAR_DATA_BUFFER = 0x2C,
+  GET_NUM_OF_MOTORS = 0x2D,
 };
 //---------------------------------------------------//
+
+static_assert(sizeof(float) == 4, "Float must be 32-bit");
+
+float readFloat(const uint8_t* data, uint8_t offset) {
+  float v;
+  memcpy(&v, &data[offset], sizeof(float));
+  return v;
+}
 
 //--------------- global variables -----------------//
 const int LED_PIN = 2;
@@ -558,6 +567,11 @@ float triggerResetParams()
   return 1.0;
 }
 
+
+float getNumOfMotors()
+{
+  return (float)num_of_motors;
+}
 
 
 

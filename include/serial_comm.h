@@ -3,14 +3,6 @@
 
 #include "command_functions.h"
 
-static_assert(sizeof(float) == 4, "Float must be 32-bit");
-
-inline float readFloat(const uint8_t* data, uint8_t offset) {
-  float v;
-  memcpy(&v, &data[offset], sizeof(float));
-  return v;
-}
-
 static inline void processCommand(uint8_t cmd, uint8_t* data) {
 
   gpio_set_level((gpio_num_t)LED_PIN, 1);
@@ -227,6 +219,14 @@ static inline void processCommand(uint8_t cmd, uint8_t* data) {
 
     case GET_CMD_TIMEOUT: {
       float res = getCmdTimeout();
+      Serial.write((uint8_t*)&res, sizeof(res));
+      needsFlush = true;
+      break;
+    }
+
+
+    case GET_NUM_OF_MOTORS: {
+      float res = getNumOfMotors();
       Serial.write((uint8_t*)&res, sizeof(res));
       needsFlush = true;
       break;
