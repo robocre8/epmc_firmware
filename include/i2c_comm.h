@@ -90,8 +90,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
 
 
     case SET_CMD_TIMEOUT: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
+      float value = readFloat(data, 1);
       setCmdTimeout((int)value);
       break;
     }
@@ -104,8 +103,7 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
 
 
     case SET_PID_MODE: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
+      float value = readFloat(data, 1);
       setPidModeFunc((int)value);
       break;
     }
