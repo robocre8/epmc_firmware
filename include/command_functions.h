@@ -40,8 +40,17 @@ enum CommandID : uint8_t {
   RESET_PARAMS = 0x1B,
   READ_MOTOR_DATA = 0x2A,
   CLEAR_DATA_BUFFER = 0x2C,
+  GET_NUM_OF_MOTORS = 0x2D,
 };
 //---------------------------------------------------//
+
+static_assert(sizeof(float) == 4, "Float must be 32-bit");
+
+float readFloat(const uint8_t* data, uint8_t offset) {
+  float v;
+  memcpy(&v, &data[offset], sizeof(float));
+  return v;
+}
 
 //--------------- global variables -----------------//
 const int LED_PIN = 2;
@@ -53,9 +62,9 @@ int IN1_0 = 5, IN2_0 = 17;
 // motor 1 H-Bridge Connection
 int IN1_1 = 19, IN2_1 = 18;
 // motor 2 H-Bridge Connection
-int IN1_2 = 26, IN2_2 = 27;
+int IN1_3 = 26, IN2_3 = 27;
 // motor 3 H-Bridge Connection
-int IN1_3 = 33, IN2_3 = 25;
+int IN1_2 = 33, IN2_2 = 25;
 
 MotorControl motor[num_of_motors] = {
   MotorControl(IN1_0, IN2_0), // motor 0
@@ -617,6 +626,12 @@ float triggerResetParams()
   // reload to reset
   loadStoredParams();
   return 1.0;
+}
+
+
+float getNumOfMotors()
+{
+  return (float)num_of_motors;
 }
 
 

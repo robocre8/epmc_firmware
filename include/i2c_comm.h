@@ -10,8 +10,6 @@ static const uint8_t MAX_I2C_BUFFER = 32;
 static uint8_t sendMsgBuffer[MAX_I2C_BUFFER];
 static uint8_t sendMsgLength = 0;
 
-static_assert(sizeof(float) == 4, "Float must be 32-bit");
-
 void clearSendMsgBuffer(){
   memset(sendMsgBuffer, 0, (size_t)MAX_I2C_BUFFER); 
   // for (uint8_t i=0; i< MAX_I2C_BUFFER; i+=1){
@@ -51,25 +49,21 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
 
   switch (cmd) {
     case WRITE_VEL: {
-      float v0, v1, v2, v3;
-      memcpy(&v0, &data[0], sizeof(float));
-      memcpy(&v1, &data[4], sizeof(float));
-      memcpy(&v2, &data[8], sizeof(float));
-      memcpy(&v3, &data[12], sizeof(float));
+      float v0 = readFloat(data, 0);
+      float v1 = readFloat(data, 4);
+      float v2 = readFloat(data, 8);
+      float v3 = readFloat(data, 12);
       writeSpeed(v0, v1, v2, v3);
-      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
 
     case WRITE_PWM: {
-      float pwm0, pwm1, pwm2, pwm3;
-      memcpy(&pwm0, &data[0], sizeof(float));
-      memcpy(&pwm1, &data[4], sizeof(float));
-      memcpy(&pwm2, &data[8], sizeof(float));
-      memcpy(&pwm3, &data[12], sizeof(float));
+      float pwm0 = readFloat(data, 0);
+      float pwm1 = readFloat(data, 4);
+      float pwm2 = readFloat(data, 8);
+      float pwm3 = readFloat(data, 12);
       writePWM((int)pwm0, (int)pwm1, (int)pwm2, (int)pwm3);
-      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
@@ -106,10 +100,8 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
 
 
     case SET_CMD_TIMEOUT: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
-      setCmdTimeout((int)value);
-      gpio_set_level((gpio_num_t)LED_PIN, 0);
+      float value = readFloat(data, 1);
+      setCmdTimeout((int)value);    
       break;
     }
 
@@ -121,10 +113,8 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
 
 
     case SET_PID_MODE: {
-      float value;
-      memcpy(&value, &data[1], sizeof(float));
+      float value = readFloat(data, 1);
       setPidModeFunc((int)value);
-      gpio_set_level((gpio_num_t)LED_PIN, 0);
       break;
     }
 
@@ -153,6 +143,8 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       break;
     }
   }
+
+  gpio_set_level((gpio_num_t)LED_PIN, 0);
   
 }
 
