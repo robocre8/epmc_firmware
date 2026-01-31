@@ -1,5 +1,6 @@
-# Easy PID Motor Controller (EPMC_V2) Firmware
+# Easy PID Motor Controller (EPMC) Firmware
 This is the code running on the microcontroller on the **Easy PID Motor Controller**.
+Controlling Two connected motors at once
 
 - it is a PlatformIO file.
 - It uses ESP32 C3 SUPER MINI
