@@ -55,7 +55,8 @@ void SimplePID::begin()
 
 float SimplePID::compute(float target, float input)
 {
-  float dt = (float)(esp_timer_get_time() - lastTime)/1000000.0;
+  int currentTime = esp_timer_get_time();
+  float freq = 1000000.0/ (float)(currentTime - lastTime);
 
   p_error = target - input;
 
@@ -64,7 +65,8 @@ float SimplePID::compute(float target, float input)
   * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
   * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
   */
-  d_error = ((target - prevTarget) - (input - prevInput))/dt;
+  // d_error = ((target - prevTarget) - (input - prevInput))*freq;
+  d_error = -1.0 * (input - prevInput) * freq;
 
   output = (kp * p_error) + i_term + (kd * d_error);
 
@@ -78,11 +80,11 @@ float SimplePID::compute(float target, float input)
     /*
     * allow turning changes, see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
     */
-    i_term += ki * p_error * dt;
+    i_term += ki * p_error / freq;
 
   prevTarget = target;
   prevInput = input;
-  lastTime = esp_timer_get_time();
+  lastTime = currentTime;
 
   return output;
 }

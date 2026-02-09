@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include "l298n_motor_control.h"
-#include "encoder_setup.h"
+#include "encoder_setup_pcnt.h"
 #include "adaptive_low_pass_filter.h"
 #include "simple_pid_control.h"
 
@@ -58,51 +58,51 @@ const int LED_PIN = 2;
 const int num_of_motors = 4;
 
 // motor 0 H-Bridge Connection
-int IN1_0 = 5, IN2_0 = 17;
+int IN1_0 = 26, IN2_0 = 27, EN_0 = 12;
 // motor 1 H-Bridge Connection
-int IN1_1 = 19, IN2_1 = 18;
+int IN1_1 = 18, IN2_1 = 19, EN_1 = 23;
 // motor 2 H-Bridge Connection
-int IN1_3 = 26, IN2_3 = 27;
+int IN1_2 = 33, IN2_2 = 25, EN_2 = 32;
 // motor 3 H-Bridge Connection
-int IN1_2 = 33, IN2_2 = 25;
+int IN1_3 = 17, IN2_3 = 5, EN_3 = 16;
 
 MotorControl motor[num_of_motors] = {
-  MotorControl(IN1_0, IN2_0), // motor 0
-  MotorControl(IN1_1, IN2_1), // motor 1
-  MotorControl(IN1_2, IN2_2), // motor 2
-  MotorControl(IN1_3, IN2_3), // motor 3
-};
-
-float enc_ppr[num_of_motors]={
-  1000.0, // motor 0 encoder pulse per revolution parameter
-  1000.0, // motor 1 encoder pulse per revolution parameter
-  1000.0, // motor 2 encoder pulse per revolution parameter
-  1000.0, // motor 3 encoder pulse per revolution parameter
+  MotorControl(IN1_0, IN2_0, EN_0), // motor 0
+  MotorControl(IN1_1, IN2_1, EN_1), // motor 1
+  MotorControl(IN1_2, IN2_2, EN_2), // motor 2
+  MotorControl(IN1_3, IN2_3, EN_3) // motor 3
 };
 
 // motor 0 encoder connection
-int enc0_clkPin = 15, enc0_dirPin = 4;
+int enc0_A = 36, enc0_B = 39;
 // motor 1 encoder connection
-int enc1_clkPin = 35, enc1_dirPin = 34;
+int enc1_A = 34, enc1_B = 35;
 // motor 2 encoder connection
-int enc2_clkPin = 13, enc2_dirPin = 14;
+int enc2_A = 13, enc2_B = 14;
 // motor 3 encoder connection
-int enc3_clkPin = 39, enc3_dirPin = 36;
+int enc3_A = 15, enc3_B = 4;
 
-QuadEncoder encoder[num_of_motors] = {
-  QuadEncoder(enc0_clkPin, enc0_dirPin, enc_ppr[0]), // motor 0 encoder connection
-  QuadEncoder(enc1_clkPin, enc1_dirPin, enc_ppr[1]), // motor 1 encoder connection
-  QuadEncoder(enc2_clkPin, enc2_dirPin, enc_ppr[2]), // motor 2 encoder connection
-  QuadEncoder(enc3_clkPin, enc3_dirPin, enc_ppr[3]), // motor 3 encoder connection
+double enc_ppr[num_of_motors]={
+  1000.0, // motor 0 encoder pulse per revolution parameter
+  1000.0, // motor 1 encoder pulse per revolution parameter
+  1000.0, // motor 2 encoder pulse per revolution parameter
+  1000.0 // motor 3 encoder pulse per revolution parameter
+};
+
+QuadEncoderPCNT encoder[num_of_motors] = {
+  QuadEncoderPCNT(enc0_A, enc0_B, enc_ppr[0], PCNT_UNIT_0), // motor 0 encoder connection
+  QuadEncoderPCNT(enc1_A, enc1_B, enc_ppr[1], PCNT_UNIT_1), // motor 1 encoder connection
+  QuadEncoderPCNT(enc2_A, enc2_B, enc_ppr[2], PCNT_UNIT_2), // motor 2 encoder connection
+  QuadEncoderPCNT(enc3_A, enc3_B, enc_ppr[3], PCNT_UNIT_3) // motor 3 encoder connection
 };
 
 // adaptive lowpass Filter
 const int filterOrder = 1;
 float cutOffFreq[num_of_motors] = {
-  2.5, // motor 0 velocity filter cutoff frequency
-  2.5, // motor 1 velocity filter cutoff frequency
-  2.5, // motor 2 velocity filter cutoff frequency
-  2.5, // motor 3 velocity filter cutoff frequency
+  1.0, // motor 0 velocity filter cutoff frequency
+  1.0, // motor 1 velocity filter cutoff frequency
+  1.0, // motor 2 velocity filter cutoff frequency
+  1.0, // motor 3 velocity filter cutoff frequency
 };
 
 AdaptiveLowPassFilter velFilter[num_of_motors] = {
@@ -110,6 +110,13 @@ AdaptiveLowPassFilter velFilter[num_of_motors] = {
   AdaptiveLowPassFilter(filterOrder, cutOffFreq[1]), // motor 1 velocity filter
   AdaptiveLowPassFilter(filterOrder, cutOffFreq[2]), // motor 2 velocity filter
   AdaptiveLowPassFilter(filterOrder, cutOffFreq[3]), // motor 3 velocity filter
+};
+
+float position[num_of_motors] = {
+  0.0,
+  0.0,
+  0.0,
+  0.0,
 };
 
 float filteredVel[num_of_motors] = {
@@ -270,7 +277,7 @@ void resetParamsInStorage(){
     storage.putFloat(kp_key[i], 0.0);
     storage.putFloat(ki_key[i], 0.0);
     storage.putFloat(kd_key[i], 0.0);
-    storage.putFloat(cf_key[i], 2.5);
+    storage.putFloat(cf_key[i], 1.0);
     storage.putInt(rdir_key[i], 1);
     storage.putFloat(maxVel_key[i], 10.0);
   }
@@ -305,7 +312,7 @@ void loadStoredParams(){
     kp[i] = storage.getFloat(kp_key[i], 0.0);
     ki[i] = storage.getFloat(ki_key[i], 0.0);
     kd[i] = storage.getFloat(kd_key[i], 0.0);
-    cutOffFreq[i] = storage.getFloat(cf_key[i], 2.5);
+    cutOffFreq[i] = storage.getFloat(cf_key[i], 1.0);
     rdir[i] = storage.getInt(rdir_key[i], 1);
     maxVel[i] = storage.getFloat(maxVel_key[i], 10.0);
   }
@@ -325,6 +332,9 @@ float writeSpeed(float v0, float v1, float v2, float v3)
   for (int i = 0; i < num_of_motors; i += 1)
   {
     float tVel = constrain(targetVel[i], -1.00 * maxVel[i], maxVel[i]);
+    if(abs((int)tVel)<1){
+      tVel = 0.0;
+    }
     target[i] = (float)rdir[i] * tVel;
   }
   motor_is_commanded = true;
@@ -352,7 +362,7 @@ void readPos(float &pos0, float &pos1, float &pos2, float &pos3)
 {  
   float posData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
-    posData[i] = rdir[i] * encoder[i].getAngPos();
+    posData[i] = rdir[i] * position[i];
   }
   pos0 = (float)posData[0];
   pos1 = (float)posData[1];
@@ -606,7 +616,7 @@ float clearDataBuffer()
 {
   for (int i = 0; i < num_of_motors; i += 1)
   {
-    encoder[i].clearTickCounts();
+    encoder[i].clearCount();
     filteredVel[i] = 0.0;
     unfilteredVel[i] = 0.0;
     target[i] = 0.0;

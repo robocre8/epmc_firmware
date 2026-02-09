@@ -2,108 +2,16 @@
 #include "command_functions.h"
 #include "serial_comm.h"
 #include "i2c_comm.h"
-#include "driver/periph_ctrl.h"
 
-//------------------------------------------------------------------------------//
 
-void IRAM_ATTR readEncoder0()
-{
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
-  if (gpio_get_level((gpio_num_t)encoder[0].clkPin) ==
-    gpio_get_level((gpio_num_t)encoder[0].dirPin))
-  {
-    encoder[0].tickCount -= 1;
-    encoder[0].dir = -1;
-  }
-  else
-  {
-    encoder[0].tickCount += 1;
-    encoder[0].dir = 1;
-  }
-
-  encoder[0].prevPeriodCount = encoder[0].periodCount;
-  encoder[0].periodCount = currentPeriodCount;
-  encoder[0].checkPeriodCount = currentPeriodCount;
-}
-
-void IRAM_ATTR readEncoder1()
-{
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
-  if (gpio_get_level((gpio_num_t)encoder[1].clkPin) ==
-    gpio_get_level((gpio_num_t)encoder[1].dirPin))
-  {
-    encoder[1].tickCount -= 1;
-    encoder[1].dir = -1;
-  }
-  else
-  {
-    encoder[1].tickCount += 1;
-    encoder[1].dir = 1;
-  }
-
-  encoder[1].prevPeriodCount = encoder[1].periodCount;
-  encoder[1].periodCount = currentPeriodCount;
-  encoder[1].checkPeriodCount = currentPeriodCount;
-}
-
-void IRAM_ATTR readEncoder2()
-{
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
-  if (gpio_get_level((gpio_num_t)encoder[2].clkPin) ==
-    gpio_get_level((gpio_num_t)encoder[2].dirPin))
-  {
-    encoder[2].tickCount -= 1;
-    encoder[2].dir = -1;
-  }
-  else
-  {
-    encoder[2].tickCount += 1;
-    encoder[2].dir = 1;
-  }
-
-  encoder[2].prevPeriodCount = encoder[2].periodCount;
-  encoder[2].periodCount = currentPeriodCount;
-  encoder[2].checkPeriodCount = currentPeriodCount;
-}
-
-void IRAM_ATTR readEncoder3()
-{
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
-  if (gpio_get_level((gpio_num_t)encoder[3].clkPin) ==
-    gpio_get_level((gpio_num_t)encoder[3].dirPin))
-  {
-    encoder[3].tickCount -= 1;
-    encoder[3].dir = -1;
-  }
-  else
-  {
-    encoder[3].tickCount += 1;
-    encoder[3].dir = 1;
-  }
-
-  encoder[3].prevPeriodCount = encoder[3].periodCount;
-  encoder[3].periodCount = currentPeriodCount;
-  encoder[3].checkPeriodCount = currentPeriodCount;
-}
 
 void encoderInit()
 {
   for (int i = 0; i < num_of_motors; i += 1)
   {
-    encoder[i].setPulsePerRev(enc_ppr[i]);
+    encoder[i].begin();
   }
-
-  attachInterrupt(digitalPinToInterrupt(encoder[0].clkPin), readEncoder0, RISING);
-  attachInterrupt(digitalPinToInterrupt(encoder[1].clkPin), readEncoder1, RISING);
-  attachInterrupt(digitalPinToInterrupt(encoder[2].clkPin), readEncoder2, RISING);
-  attachInterrupt(digitalPinToInterrupt(encoder[3].clkPin), readEncoder3, RISING);
 }
-
-//----------------------------------------------------------------------------------------------//
 
 void velFilterInit()
 {
@@ -126,8 +34,8 @@ void pidInit()
 // Timing variables in esp_timer_get_timeeconds
 // please do not adjust any of the values as it can affect important operations
 // uint64_t serialCommTime, serialCommTimeInterval = 5000;
-uint64_t sensorReadTime, sensorReadTimeInterval = 1000;
-uint64_t pidTime, pidTimeInterval = 2500;
+uint64_t sensorReadTime, sensorReadTimeInterval = 2500;
+uint64_t pidTime, pidTimeInterval = 10000;
 //---------------------------------------------------------------------------------------------
 
 
@@ -149,6 +57,7 @@ void setup()
   analogWriteFrequency(1000); // 1kHz
   // analogWriteFrequency(5000); // 5kHz
   // analogWriteFrequency(10000); // 10kHz
+  // analogWriteFrequency(20000); // 20kHz
 
   encoderInit();
   velFilterInit();
@@ -179,7 +88,8 @@ void loop()
   {
     for (int i = 0; i < num_of_motors; i += 1)
     {
-      encoder[i].resetFrequency(); // ensures readinding of zero velocity when motor stops
+      encoder[i].update_total_encoder_count();
+      position[i] = encoder[i].getAngPos();
       unfilteredVel[i] = encoder[i].getAngVel();
       filteredVel[i] = velFilter[i].filter(unfilteredVel[i]);
     }
