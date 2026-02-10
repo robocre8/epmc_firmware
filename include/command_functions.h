@@ -632,8 +632,8 @@ float triggerResetParams()
   storage.putBool(firstLoad_key, firstLoad);
   storage.end();
   // reload to reset
-  loadStoredParams();
-  clearDataBuffer();
+  // loadStoredParams();
+  // clearDataBuffer();
   return 1.0;
 }
 
