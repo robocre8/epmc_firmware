@@ -80,6 +80,11 @@ void QuadEncoderPCNT::update_total_encoder_count()
 
 void QuadEncoderPCNT::clearCount()
 {
+  pcnt_counter_pause(unit);
+  pcnt_counter_clear(unit);
+  pcnt_counter_resume(unit);
+  
+  prevCount = 0;
   totalCount = 0;
   countsPerSec = 0.0;
   prev_us = esp_timer_get_time();
