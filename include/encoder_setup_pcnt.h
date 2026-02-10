@@ -8,7 +8,7 @@
 class QuadEncoderPCNT {
 
 public:
-  QuadEncoderPCNT(int pulse_pin, int ctrl_pin, float ppr, pcnt_unit_t pcnt_unit);
+  QuadEncoderPCNT(int pulse_pin, int ctrl_pin, float ppr, pcnt_unit_t unit, int16_t high_lim = 32767, int16_t low_lim  = -32768);
 
   void begin();
   void setPulsePerRev(float ppr);
@@ -20,16 +20,22 @@ public:
   void update_total_encoder_count();
 
 private:
-  static const int32_t MAX_INT_RANGE = 32767;
-  static const int32_t MIN_INT_RANGE = -32768;
-  static const int32_t MAX_DELTA_COUNT_RANGE = 25000; // check PCNT Overflow
+  int16_t high_lim_, low_lim_;
 
   int pulsePin, ctrlPin;
   float pulsePerRev, countsPerSec;
   int32_t prevCount, totalCount;
-  pcnt_unit_t unit;
+  pcnt_unit_t unit_;
 
   int64_t prev_us;
+
+  volatile int32_t accum_ = 0;
+
+  static QuadEncoderPCNT* instance_table[PCNT_UNIT_MAX];
+
+  static void IRAM_ATTR pcnt_isr(void* arg);
+
+  int32_t getCount();
 };
 
 

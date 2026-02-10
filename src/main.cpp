@@ -111,7 +111,7 @@ void loop()
   }
 
   // stop motor if target is zero.
-  if (abs(target[0]) < 0.001 && abs(target[1]) < 0.001 && abs(target[2]) < 0.001 && abs(target[3]) < 0.001)
+  if (abs(target[0]) < 0.1 && abs(target[1]) < 0.1 && abs(target[2]) < 0.1 && abs(target[3]) < 0.1)
   {
     if (pidMode == 1)
     {

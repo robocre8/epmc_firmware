@@ -332,9 +332,6 @@ float writeSpeed(float v0, float v1, float v2, float v3)
   for (int i = 0; i < num_of_motors; i += 1)
   {
     float tVel = constrain(targetVel[i], -1.00 * maxVel[i], maxVel[i]);
-    if(abs((int)tVel)<1){
-      tVel = 0.0;
-    }
     target[i] = (float)rdir[i] * tVel;
   }
   motor_is_commanded = true;
@@ -617,6 +614,7 @@ float clearDataBuffer()
   for (int i = 0; i < num_of_motors; i += 1)
   {
     encoder[i].clearCount();
+    position[i] = 0.0;
     filteredVel[i] = 0.0;
     unfilteredVel[i] = 0.0;
     target[i] = 0.0;
@@ -635,6 +633,7 @@ float triggerResetParams()
   storage.end();
   // reload to reset
   loadStoredParams();
+  clearDataBuffer();
   return 1.0;
 }
 
