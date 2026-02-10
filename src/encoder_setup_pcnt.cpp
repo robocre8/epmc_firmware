@@ -71,7 +71,11 @@ void QuadEncoderPCNT::update_total_encoder_count()
     }
   }
 
-  countsPerSec = (float)deltaCount * (1000000.0 / (float)(current_us-prev_us));
+  int64_t dt = current_us - prev_us;
+  if (dt > 0)
+    countsPerSec = (float)deltaCount * (1000000.0 / (float)dt);
+  else
+    countsPerSec = 0.0f;
 
   totalCount += deltaCount;
   prevCount = currentCount;
@@ -83,7 +87,7 @@ void QuadEncoderPCNT::clearCount()
   pcnt_counter_pause(unit);
   pcnt_counter_clear(unit);
   pcnt_counter_resume(unit);
-  
+
   prevCount = 0;
   totalCount = 0;
   countsPerSec = 0.0;

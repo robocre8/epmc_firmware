@@ -2,6 +2,7 @@
 #define ENCODER_SETUP_PCNT_H
 #include <Arduino.h>
 #include "driver/pcnt.h"
+#include "esp_timer.h"
 
 
 class QuadEncoderPCNT {
