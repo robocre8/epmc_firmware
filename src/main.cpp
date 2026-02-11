@@ -8,8 +8,8 @@
 // Timing variables in esp_timer_get_timeeconds
 // please do not adjust any of the values as it can affect important operations
 // uint64_t serialCommTime, serialCommTimeInterval = 5000;
-uint64_t sensorReadTime, sensorReadTimeInterval = 2500;
-uint64_t pidTime, pidTimeInterval = 10000;
+uint64_t sensorReadTime, sensorReadTimeInterval = 5000;
+uint64_t pidTime, pidTimeInterval = 20000;
 //---------------------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------//
