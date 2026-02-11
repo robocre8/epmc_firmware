@@ -4,90 +4,66 @@
 #include "i2c_comm.h"
 #include "driver/periph_ctrl.h"
 
+//---------------------------------------------------------------------------------------------
+// Timing variables in esp_timer_get_timeeconds
+// please do not adjust any of the values as it can affect important operations
+// uint64_t serialCommTime, serialCommTimeInterval = 5000;
+uint64_t sensorReadTime, sensorReadTimeInterval = 2500;
+uint64_t pidTime, pidTimeInterval = 10000;
+//---------------------------------------------------------------------------------------------
+
 //------------------------------------------------------------------------------//
 
 void IRAM_ATTR readEncoder0()
 {
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
   if (gpio_get_level((gpio_num_t)encoder[0].clkPin) ==
     gpio_get_level((gpio_num_t)encoder[0].dirPin))
   {
     encoder[0].tickCount -= 1;
-    encoder[0].dir = -1;
   }
   else
   {
     encoder[0].tickCount += 1;
-    encoder[0].dir = 1;
   }
-
-  encoder[0].prevPeriodCount = encoder[0].periodCount;
-  encoder[0].periodCount = currentPeriodCount;
-  encoder[0].checkPeriodCount = currentPeriodCount;
 }
 
 void IRAM_ATTR readEncoder1()
 {
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
   if (gpio_get_level((gpio_num_t)encoder[1].clkPin) ==
     gpio_get_level((gpio_num_t)encoder[1].dirPin))
   {
     encoder[1].tickCount -= 1;
-    encoder[1].dir = -1;
   }
   else
   {
     encoder[1].tickCount += 1;
-    encoder[1].dir = 1;
   }
-
-  encoder[1].prevPeriodCount = encoder[1].periodCount;
-  encoder[1].periodCount = currentPeriodCount;
-  encoder[1].checkPeriodCount = currentPeriodCount;
 }
 
 void IRAM_ATTR readEncoder2()
 {
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
   if (gpio_get_level((gpio_num_t)encoder[2].clkPin) ==
     gpio_get_level((gpio_num_t)encoder[2].dirPin))
   {
     encoder[2].tickCount -= 1;
-    encoder[2].dir = -1;
   }
   else
   {
     encoder[2].tickCount += 1;
-    encoder[2].dir = 1;
   }
-
-  encoder[2].prevPeriodCount = encoder[2].periodCount;
-  encoder[2].periodCount = currentPeriodCount;
-  encoder[2].checkPeriodCount = currentPeriodCount;
 }
 
 void IRAM_ATTR readEncoder3()
 {
-  uint64_t currentPeriodCount = esp_timer_get_time();
-
   if (gpio_get_level((gpio_num_t)encoder[3].clkPin) ==
     gpio_get_level((gpio_num_t)encoder[3].dirPin))
   {
     encoder[3].tickCount -= 1;
-    encoder[3].dir = -1;
   }
   else
   {
     encoder[3].tickCount += 1;
-    encoder[3].dir = 1;
   }
-
-  encoder[3].prevPeriodCount = encoder[3].periodCount;
-  encoder[3].periodCount = currentPeriodCount;
-  encoder[3].checkPeriodCount = currentPeriodCount;
 }
 
 void encoderInit()
@@ -110,6 +86,7 @@ void velFilterInit()
   for (int i = 0; i < num_of_motors; i += 1)
   {
     velFilter[i].setCutOffFreq(cutOffFreq[i]);
+    velFilter[i].setLoopFreq(1000000.0/(float)sensorReadTimeInterval);
   }
 }
 
@@ -118,17 +95,10 @@ void pidInit()
   for (int i = 0; i < num_of_motors; i += 1)
   {
     pidMotor[i].setParameters(kp[i], ki[i], kd[i], outMin, outMax);
+    pidMotor[i].setLoopFreq(1000000.0/(float)pidTimeInterval);
     pidMotor[i].begin();
   }
 }
-
-//---------------------------------------------------------------------------------------------
-// Timing variables in esp_timer_get_timeeconds
-// please do not adjust any of the values as it can affect important operations
-// uint64_t serialCommTime, serialCommTimeInterval = 5000;
-uint64_t sensorReadTime, sensorReadTimeInterval = 1000;
-uint64_t pidTime, pidTimeInterval = 2500;
-//---------------------------------------------------------------------------------------------
 
 
 void setup()
@@ -171,23 +141,25 @@ void setup()
 
 void loop()
 {
+  uint64_t now_us = esp_timer_get_time();
   // Serial comm loop
   recieve_and_send_data();
   
   // Velocity reading and filtering
-  if ((esp_timer_get_time() - sensorReadTime) >= sensorReadTimeInterval)
+  if ((now_us - sensorReadTime) >= sensorReadTimeInterval)
   {
     for (int i = 0; i < num_of_motors; i += 1)
     {
-      encoder[i].resetFrequency(); // ensures readinding of zero velocity when motor stops
+      encoder[i].updateCounts();
+      position[i] = encoder[i].getAngPos();
       unfilteredVel[i] = encoder[i].getAngVel();
       filteredVel[i] = velFilter[i].filter(unfilteredVel[i]);
     }
-    sensorReadTime = esp_timer_get_time();
+    sensorReadTime = now_us;
   }
 
   // PID control loop
-  if ((esp_timer_get_time() - pidTime) >= pidTimeInterval)
+  if ((now_us - pidTime) >= pidTimeInterval)
   {
     if (pidMode)
     {
@@ -197,7 +169,7 @@ void loop()
         motor[i].sendPWM((int)output[i]);
       }
     }
-    pidTime = esp_timer_get_time();
+    pidTime = now_us;
   }
 
   // stop motor if target is zero.
@@ -223,13 +195,13 @@ void loop()
 
   // command timeout
   if (motor_is_commanded) {
-    cmdVelTimeout = esp_timer_get_time();
+    cmdVelTimeout = now_us;
     motor_is_commanded = false;
   }
   
   if (cmdVelTimeoutInterval > 0)
   {
-    if ((esp_timer_get_time() - cmdVelTimeout) >= cmdVelTimeoutInterval)
+    if ((now_us - cmdVelTimeout) >= cmdVelTimeoutInterval)
     {
       if (pidMode == 1) writeSpeed(0.0, 0.0, 0.0, 0.0);
       else writePWM(0, 0, 0, 0);
