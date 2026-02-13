@@ -14,11 +14,13 @@ class AdaptiveLowPassFilter
     float tn1 = 0;
     float x[3]; // Raw values
     float y[3]; // Filtered values
+    float loopFreq = 50.0;
 
   public:  
     AdaptiveLowPassFilter(int, float);
 
     void setCutOffFreq(float);
+    void setLoopFreq(float);
     void setOrder(int);
     void setCoef();
     float filter(float);

@@ -24,6 +24,14 @@ void AdaptiveLowPassFilter::setCutOffFreq(float f0)
   setCoef();
 }
 
+void AdaptiveLowPassFilter::setLoopFreq(float loop_freq)
+{
+  loopFreq = loop_freq;
+
+  clear();
+  setCoef();
+}
+
 void AdaptiveLowPassFilter::clear()
 {
   for (int k = 0; k < order + 1; k++)
@@ -48,11 +56,12 @@ void AdaptiveLowPassFilter::setOrder(int orderVal)
 
 void AdaptiveLowPassFilter::setCoef()
 {
-  float t = esp_timer_get_time() / 1.0e6;
-  dt = t - tn1;
-  tn1 = t;
+  // float t = esp_timer_get_time() / 1.0e6;
+  // dt = t - tn1;
+  // tn1 = t;
 
-  float alpha = omega0 * dt;
+  // float alpha = omega0 * dt;
+  float alpha = omega0 / loopFreq;
 
   if (order == 1)
   {

@@ -16,12 +16,14 @@ class SimplePID {
     void begin();
     void reset();
     float compute(float target, float actual);
+    void setLoopFreq(float loop_freq);
 
   private:
     float p_error, d_error, i_term, prevInput, prevTarget;
     uint64_t lastTime;
     float kp, ki, kd;
     float outMax, outMin, output;
+    float loopFreq = 50.0;
 };
 
 #endif
