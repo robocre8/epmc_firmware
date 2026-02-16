@@ -6,22 +6,27 @@
 
 class QuadEncoder {
 public:
-  portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
   int clkPin, dirPin;
-  float pulsePerRev;
   volatile long tickCount;
-  volatile uint64_t periodCount, prevPeriodCount;
-  volatile int dir;
-  uint64_t checkPeriodCount, periodSampleTime=25000;
+  portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
   QuadEncoder(int clk_pin, int dir_pin, float ppr);
 
   void clearTickCounts();
+  void updateCounts();
+  long getTotalCounts();
+  float getCountsPerSec();
   void setPulsePerRev(float ppr);
   float getAngPos();
   float getAngVel();
-  void setStopFreqInUs(uint64_t freq);
-  void resetFrequency();
+
+private:
+  float pulsePerRev;
+  long prevTickCount;
+  long totalCount;
+  float countsPerSec;
+
+  uint64_t prev_us;
 };
 
 
