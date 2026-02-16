@@ -85,13 +85,18 @@ QuadEncoder encoder[num_of_motors] = {
 // adaptive lowpass Filter
 const int filterOrder = 1;
 float cutOffFreq[num_of_motors] = {
-  2.5, // motor 0 velocity filter cutoff frequency
-  2.5, // motor 1 velocity filter cutoff frequency
+  1.5, // motor 0 velocity filter cutoff frequency
+  1.5, // motor 1 velocity filter cutoff frequency
 };
 
 AdaptiveLowPassFilter velFilter[num_of_motors] = {
   AdaptiveLowPassFilter(filterOrder, cutOffFreq[0]), // motor 0 velocity filter
   AdaptiveLowPassFilter(filterOrder, cutOffFreq[1]), // motor 1 velocity filter
+};
+
+float position[num_of_motors] = {
+  0.0,
+  0.0,
 };
 
 float filteredVel[num_of_motors] = {
@@ -217,7 +222,7 @@ void resetParamsInStorage(){
     storage.putFloat(kp_key[i], 0.0);
     storage.putFloat(ki_key[i], 0.0);
     storage.putFloat(kd_key[i], 0.0);
-    storage.putFloat(cf_key[i], 2.5);
+    storage.putFloat(cf_key[i], 1.5);
     storage.putInt(rdir_key[i], 1);
     storage.putFloat(maxVel_key[i], 10.0);
   }
@@ -252,7 +257,7 @@ void loadStoredParams(){
     kp[i] = storage.getFloat(kp_key[i], 0.0);
     ki[i] = storage.getFloat(ki_key[i], 0.0);
     kd[i] = storage.getFloat(kd_key[i], 0.0);
-    cutOffFreq[i] = storage.getFloat(cf_key[i], 2.5);
+    cutOffFreq[i] = storage.getFloat(cf_key[i], 1.5);
     rdir[i] = storage.getInt(rdir_key[i], 1);
     maxVel[i] = storage.getFloat(maxVel_key[i], 10.0);
   }
@@ -299,7 +304,7 @@ void readPos(float &pos0, float &pos1)
 {  
   float posData[num_of_motors];
   for (int i = 0; i < num_of_motors; i += 1){
-    posData[i] = rdir[i] * encoder[i].getAngPos();
+    posData[i] = rdir[i] * position[i];
   }
   pos0 = (float)posData[0];
   pos1 = (float)posData[1];
@@ -563,7 +568,7 @@ float triggerResetParams()
   storage.putBool(firstLoad_key, firstLoad);
   storage.end();
   // reload to reset
-  loadStoredParams();
+  // loadStoredParams();
   return 1.0;
 }
 
