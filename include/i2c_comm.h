@@ -131,6 +131,12 @@ void handleCommand(uint8_t cmd, uint8_t* data) {
       break;
     }
 
+    case GET_NUM_OF_MOTORS: {
+      float res = getNumOfMotors();
+      prepareResponse1(res);
+      break;
+    }
+
     case CLEAR_DATA_BUFFER: {
       float res = clearDataBuffer();
       prepareResponse1(res);
